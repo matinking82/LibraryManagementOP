@@ -128,6 +128,8 @@ public:
 
 	void Add(User user)
 	{
+		static int id = LastId() + 1;
+		user.Id = id;
 		ofstream writer(path, ios::app);
 
 		writer << user.Id << endl;
@@ -138,6 +140,8 @@ public:
 		writer << user.IsManager << endl;
 
 		writer.close();
+
+		id++;
 	}
 
 	void Update(User user)
@@ -212,7 +216,7 @@ public:
 		int step = 0;
 		while (getline(reader, line))
 		{
-			if (step == 0)
+			if (step == 1)
 			{
 				if (line.compare(userName) == 0)
 				{
@@ -222,7 +226,7 @@ public:
 			}
 
 			step++;
-			if (step = 6)
+			if (step == 6)
 			{
 				step = 0;
 			}
@@ -484,7 +488,7 @@ public:
 			}
 
 			step++;
-			if (step = 6)
+			if (step == 6)
 			{
 				step = 0;
 			}
@@ -510,7 +514,7 @@ public:
 			}
 
 			step++;
-			if (step = 6)
+			if (step == 6)
 			{
 				step = 0;
 			}
