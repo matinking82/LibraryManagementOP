@@ -127,7 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Entities.cpp" />
     <ClCompile Include="LibraryManagementOP.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Entities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
