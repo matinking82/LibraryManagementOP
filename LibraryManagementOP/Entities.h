@@ -95,7 +95,7 @@ public:
 			step++;
 			if (step == 6)
 			{
-				result.push_back(user);
+				result.emplace_back(user);
 				step = 0;
 			}
 		}
@@ -363,7 +363,7 @@ public:
 			step++;
 			if (step == 6)
 			{
-				result.push_back(book);
+				result.emplace_back(book);
 				step = 0;
 			}
 		}
@@ -647,7 +647,7 @@ public:
 			step++;
 			if (step == 5)
 			{
-				result.push_back(comment);
+				result.emplace_back(comment);
 				step = 0;
 			}
 		}
@@ -747,7 +747,7 @@ public:
 			{
 				if (comment.BookId == BookId)
 				{
-					result.push_back(comment);
+					result.emplace_back(comment);
 				}
 				step = 0;
 			}
@@ -806,7 +806,7 @@ public:
 			step++;
 			if (step == 5)
 			{
-				result.push_back(bookCart);
+				result.emplace_back(bookCart);
 				step = 0;
 			}
 		}
