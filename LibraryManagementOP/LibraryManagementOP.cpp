@@ -41,6 +41,7 @@ void Login();
 void SignUp();
 void SignOut();
 void Authenticate();
+void SearchBookForMember();
 void Start();
 bool IsNumber(string s);
 void EditProfile();
@@ -487,6 +488,61 @@ void SelectBookByMember(int BookId)
 	}
 }
 
+void SearchBookForMember()
+{
+	ClearConsole();
+	MenuInput menu;
+	menu.Title = "Search Books";
+
+	menu.Items.emplace_back("1. Search by Book Name");
+	menu.Items.emplace_back("2. Search by Book Author");
+	menu.Items.emplace_back("3. Search by Book Name and Author");
+	menu.Items.emplace_back("8. Back");
+
+	ShowMenu(menu);
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		SearchBookForMember();
+		return;
+	}
+
+	key = stoi(k);
+
+	print("Search Key: ");
+	char temp[100];
+	cin.getline(temp, 100);
+	cin.getline(temp, 100);
+	string SearchKey = temp;
+
+	switch (key)
+	{
+	case 1:
+
+		break;
+
+	case 2:
+
+		break;
+
+	case 3:
+
+		break;
+
+	case 8:
+		ShowBooksForMembers();
+		break;
+	default:
+		ShowError("Invalid Input!!");
+		SearchBookForMember();
+		break;
+	}
+}
+
 void ShowBooksForMembers(int page)
 {
 	ClearConsole();
@@ -554,7 +610,7 @@ void ShowBooksForMembers(int page)
 		}
 		l = stoi(temp);
 
-		if (!bookServices.IsExist(l) && !bookServices.Find(l).IsAvailable)
+		if (!bookServices.IsExist(l) || !bookServices.Find(l).IsAvailable)
 		{
 			ShowError("Book not found!!");
 			ShowBooksForMembers(page);
@@ -565,7 +621,7 @@ void ShowBooksForMembers(int page)
 		break;
 
 	case 4:
-		//TODO
+		SearchBookForMember();
 		break;
 
 	case 8:
