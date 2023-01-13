@@ -695,12 +695,20 @@ void AddBookByManager()
 	Book book;
 	book.Id = bookServices.LastId() + 1;
 	book.IsAvailable = true;
+
+	char name[150], author[150], genre[150];
+
+	cin.getline(name, 150);
 	print("Name : ");
-	cin >> book.Name;
+	cin.getline(name, 150);
 	print("Author : ");
-	cin >> book.Author;
+	cin.getline(author, 150);
 	print("Genre : ");
-	cin >> book.Genre;
+	cin.getline(genre, 150);
+
+	book.Name = name;
+	book.Author = author;
+	book.Genre = genre;
 
 	bookServices.Add(book);
 	ShowError("Book Added Successfully");

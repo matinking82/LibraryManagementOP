@@ -81,13 +81,13 @@ Love
 Adel
 Romance
 
-1
+0
 17
 b1
 mat
 horror
 2018/2/2 18:43
-1
+0
 18
 b3New
 mat
@@ -98,5 +98,17 @@ horrorNew
 Love
 Adel
 Romance
+
+1
+20
+if
+it
+was
+
+1
+21
+if it was true
+George maddison mc kelny
+dram
 
 1
