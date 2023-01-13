@@ -103,6 +103,20 @@ public:
 		return result;
 	}
 
+	vector<User> GetUsersPaged(vector<User> users, int count, int page = 1)
+	{
+		vector<User> Result;
+		int start = 0;
+		start += (count * (page - 1));
+		for (; start < users.size() && count > 0; start++)
+		{
+			Result.emplace_back(users[start]);
+			count--;
+		}
+
+		return Result;
+	}
+
 	void Remove(string userName)
 	{
 		vector<User> users = AllUsers();
@@ -235,6 +249,32 @@ public:
 		return false;
 	}
 
+	bool IsExist(int UserId)
+	{
+		ifstream reader(path);
+		string line;
+		int step = 0;
+		while (getline(reader, line))
+		{
+			if (step == 0)
+			{
+				if (stoi(line) == UserId)
+				{
+					reader.close();
+					return true;
+				}
+			}
+
+			step++;
+			if (step == 6)
+			{
+				step = 0;
+			}
+		}
+		reader.close();
+		return false;
+	}
+
 	User Find(string userName)
 	{
 		ifstream reader(path);
@@ -277,6 +317,58 @@ public:
 			if (step == 6)
 			{
 				if (user.Username.compare(userName) == 0)
+				{
+					reader.close();
+					return user;
+				}
+				step = 0;
+			}
+		}
+		reader.close();
+	}
+
+	User Find(int UserId)
+	{
+		ifstream reader(path);
+		string line;
+		User user;
+		int step = 0;
+		while (getline(reader, line))
+		{
+			switch (step)
+			{
+			case 0:
+				user.Id = stoi(line);
+				break;
+
+			case 1:
+				user.Username = line;
+				break;
+
+			case 2:
+				user.Password = line;
+				break;
+
+			case 3:
+				user.FullName = line;
+				break;
+
+			case 4:
+				user.SignDate = line;
+				break;
+
+			case 5:
+				user.IsManager = stoi(line);
+				break;
+			default:
+				break;
+			}
+
+
+			step++;
+			if (step == 6)
+			{
+				if (user.Id == UserId)
 				{
 					reader.close();
 					return user;
@@ -813,6 +905,20 @@ public:
 		reader.close();
 		return result;
 
+	}
+
+	int GetBorrowingCountForUser(int userId)
+	{
+		int count = 0;
+		vector<BookCart> carts = AllBookCarts();
+		for (BookCart cart : carts)
+		{
+			if (cart.UserId == userId && !cart.IsGivenBack)
+			{
+				count++;
+			}
+		}
+		return count;
 	}
 
 	void Remove(int Id)

@@ -21,14 +21,16 @@ struct MenuInput
 void ClearConsole();
 void print(string n);
 void ShowMenu(MenuInput menu);
+void ShowUsersList(vector<User> users);
 void ShowError(string message);
 void MainMenu();
 void ManagerMenu();
+void SelectUserByManager(int UserId);
 void ShowBooksForMembers();
 void Profile();
 void ShowBorrowedBooksForMembers();
 void ShowBooksForManagers();
-void ShowUsersForManagers();
+void ShowUsersForManagers(int page = 1);
 void AddManager();
 void Login();
 void SignUp();
@@ -81,6 +83,27 @@ void ShowMenu(MenuInput menu)
 		cout << "\t" << item << endl;
 	}
 	cout << endl << endl << endl;
+}
+
+void ShowUsersList(vector<User> users)
+{
+	for (User user : users)
+	{
+		print("Id: " + to_string(user.Id) + "\n");
+		print("Username: " + user.Username + "\n");
+		print("FullName: " + user.FullName + "\n");
+		print("Register Date: " + user.SignDate + "\n");
+		print("Books Borrowed: " + to_string(bookCartServices.GetBorrowingCountForUser(user.Id)) + "\n");
+		if (user.IsManager)
+		{
+			print("Role: Manager\n");
+		}
+		else
+		{
+			print("Role: Member\n");
+		}
+		cout << "-------------------------------------------------\n";
+	}
 }
 
 void ShowError(string message)
@@ -382,8 +405,145 @@ void ShowBooksForManagers()
 
 }
 
-void ShowUsersForManagers()
+void SelectUserByManager(int UserId)
 {
+	ClearConsole();
+	if (!IsAuthenticated)
+	{
+		ShowError("User Is Not Authenticated!!");
+		Start();
+		return;
+	}
+	User user = userSevices.Find(UserId);
+	MenuInput menu;
+	menu.Title = "Profile";
+
+	menu.Items.emplace_back("Username : " + user.Username);
+	menu.Items.emplace_back("Fullname : " + user.FullName);
+	if (user.IsManager)
+	{
+		menu.Items.emplace_back("Role : Manager");
+	}
+	else
+	{
+		menu.Items.emplace_back("Role : Member");
+	}
+	menu.Items.emplace_back("Register Date : " + user.SignDate);
+	menu.Items.emplace_back("Borrowed Books : " + bookCartServices.GetBorrowingCountForUser(UserId));
+	menu.Items.emplace_back("\n----------------------------------------\n");
+	menu.Items.emplace_back("1. Delete User");
+	menu.Items.emplace_back("8. Back");
+
+	ShowMenu(menu);
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		Profile();
+		return;
+	}
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+
+		userSevices.Remove(user.Username);
+		ShowError("User With Id " + to_string(user.Id) + " Deleted Successfully!!");
+		ShowUsersForManagers();
+		break;
+	case 8:
+		ShowUsersForManagers();
+		break;
+	default:
+		ShowError("Invalid Input!!");
+		SelectUserByManager(UserId);
+		break;
+	}
+
+}
+
+void ShowUsersForManagers(int page)
+{
+	ClearConsole();
+	MenuInput menu;
+	menu.Title = "Users | Page " + to_string(page);
+	ShowMenu(menu);
+	vector<User> users = userSevices.GetUsersPaged(userSevices.AllUsers(), 10, page);
+	ShowUsersList(users);
+	cout << "1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 5. Search | 8. Back\n";
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		Profile();
+		return;
+	}
+
+	key = stoi(k);
+	string temp;
+	int l;
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowUsersForManagers(page);
+		break;
+
+	case 2:
+		page++;
+		ShowUsersForManagers(page);
+		break;
+
+	case 3:
+		print("User Id: ");
+
+		cin >> temp;
+		if (!IsNumber(temp))
+		{
+			ShowError("Invalid Input!!");
+			ShowUsersForManagers(page);
+			break;;
+		}
+		l = stoi(temp);
+
+		if (!userSevices.IsExist(l))
+		{
+			ShowError("User not found!!");
+			ShowUsersForManagers(page);
+			break;
+		}
+
+		SelectUserByManager(l);
+		break;
+
+	case 4:
+
+		break;
+
+	case 5:
+
+		break;
+
+	case 8:
+		ManagerMenu();
+		break;
+	default:
+		ShowError("Invalid Input!!");
+		ShowUsersForManagers();
+		break;
+	}
 
 }
 
