@@ -19,6 +19,7 @@ struct MenuInput
 };
 
 void ClearConsole();
+void print(string n);
 void ShowMenu(MenuInput menu);
 void ShowError(string message);
 void MainMenu();
@@ -63,6 +64,11 @@ bool IsNumber(string s)
 void ClearConsole()
 {
 	system("cls");
+}
+
+void print(string n)
+{
+	cout << "\t" << n;
 }
 
 void ShowMenu(MenuInput menu)
@@ -306,7 +312,7 @@ void EditProfile()
 	switch (key)
 	{
 	case 1:
-		cout << "New Username : ";
+		print("New Username : ");
 		cin >> newUsername;
 
 		if (userSevices.IsExist(newUsername))
@@ -322,9 +328,9 @@ void EditProfile()
 		break;
 
 	case 2:
-		cout << "Old Password : ";
+		print("Old Password : ");
 		cin >> oldPass;
-		cout << "New Password : ";
+		print("New Password : ");
 		cin >> newPass;
 
 		if (AuthUser.Password != oldPass)
@@ -343,7 +349,7 @@ void EditProfile()
 		break;
 
 	case 3:
-		cout << "New FullName : ";
+		print("New FullName : ");
 		cin.getline(fl, 100);
 		cin.getline(fl, 100);
 
@@ -384,6 +390,41 @@ void ShowUsersForManagers()
 void AddManager()
 {
 
+	ClearConsole();
+	if (!AuthUser.IsManager)
+	{
+		ShowError("Access Denied!!");
+		Start();
+		return;
+	}
+
+	MenuInput menu;
+	menu.Title = "Add Manager";
+	ShowMenu(menu);
+
+
+	User user;
+	user.IsManager = true;
+	print("Username : ");
+	cin >> user.Username;
+	print("Password : ");
+	cin >> user.Password;
+	print("FullName : ");
+	char fl[100];
+	cin.getline(fl, 100);
+	cin.getline(fl, 100);
+	user.FullName = fl;
+
+	if (userSevices.IsExist(user.Username))
+	{
+		ShowError("This Username is taken!!");
+		ManagerMenu();
+		return;
+	}
+
+	userSevices.Add(user);
+	ShowError("Manager Added Successfully!!");
+	ManagerMenu();
 }
 
 void Login()
@@ -394,9 +435,9 @@ void Login()
 	ShowMenu(menu);
 	string Username, Password;
 
-	cout << "\t" << "Username : ";
+	print("Username : ");
 	cin >> Username;
-	cout << "\t" << "Password : ";
+	print("Password : ");
 	cin >> Password;
 
 	if (!userSevices.IsExist(Username))
@@ -428,11 +469,11 @@ void SignUp()
 	ShowMenu(menu);
 	string Username, Password;
 	char FullName[100];
-	cout << "\t" << "Username : ";
+	print("Username : ");
 	cin >> Username;
-	cout << "\t" << "Password : ";
+	print("Password : ");
 	cin >> Password;
-	cout << "\t" << "FullName : ";
+	print("FullName : ");
 	cin.getline(FullName, 100);
 	cin.getline(FullName, 100);
 
@@ -515,4 +556,3 @@ void Start()
 		MainMenu();
 	}
 }
-
