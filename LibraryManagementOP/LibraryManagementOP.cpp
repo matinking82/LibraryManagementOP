@@ -137,6 +137,7 @@ void MainMenu()
 		if (AuthUser.IsManager)
 		{
 			ManagerMenu();
+			break;
 		}
 	default:
 		ShowError("Invalid Input!!");
