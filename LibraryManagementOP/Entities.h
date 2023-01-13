@@ -463,6 +463,19 @@ public:
 		return result;
 	}
 
+	vector<Book> GetBooksPaged(vector<Book> books, int count, int page = 1)
+	{
+		vector<Book> Result;
+		int start = 0;
+		start += (count * (page - 1));
+		for (; start < books.size() && count > 0; start++)
+		{
+			Result.emplace_back(books[start]);
+			count--;
+		}
+		return Result;
+	}
+
 	void Remove(int Id)
 	{
 		vector<Book> books = AllBooks();
@@ -921,25 +934,84 @@ public:
 		return count;
 	}
 
-	void Remove(int Id)
+	vector<BookCart> GetAllCartsForUser(int userId)
+	{
+		vector<BookCart> carts = AllBookCarts();
+		vector<BookCart> result;
+		for (BookCart cart : carts)
+		{
+			if (cart.UserId == userId)
+			{
+				result.emplace_back(cart);
+			}
+		}
+		return result;
+	}
+
+	BookCart Find(int BookId)
+	{
+		ifstream reader(path);
+		string line;
+		BookCart cart;
+		int step = 0;
+		while (getline(reader, line))
+		{
+			switch (step)
+			{
+			case 0:
+				cart.UserId = stoi(line);
+				break;
+
+			case 1:
+				cart.BookId = stoi(line);
+				break;
+
+			case 2:
+				cart.StartDate = line;
+				break;
+
+			case 3:
+				cart.EndDate = line;
+				break;
+
+			case 4:
+				cart.IsGivenBack = stoi(line);
+				break;
+
+			default:
+				break;
+			}
+
+
+			step++;
+			if (step == 5)
+			{
+				if (cart.BookId == BookId)
+				{
+					reader.close();
+					return cart;
+				}
+				step = 0;
+			}
+		}
+		reader.close();
+	}
+
+	void Remove(int BookId)
 	{
 		vector<BookCart> bookCarts = AllBookCarts();
 
 		ofstream writer(path);
-
-		for (BookCart bookCart : bookCarts)
-		{
-			writer << bookCart.UserId << endl;
-			writer << bookCart.BookId << endl;
-			writer << bookCart.StartDate << endl;
-			writer << bookCart.EndDate << endl;
-			writer << bookCart.IsGivenBack << endl;
-		}
-
 		writer.close();
 
+		for (BookCart cart : bookCarts)
+		{
+			if (cart.BookId != BookId)
+			{
+				Add(cart);
+			}
+		}
 	}
-
 	void Add(BookCart bookCart)
 	{
 		ofstream writer(path, ios::app);

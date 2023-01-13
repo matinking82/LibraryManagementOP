@@ -23,15 +23,20 @@ void print(string n);
 void ShowMenu(MenuInput menu);
 void ShowUsersList(vector<User> users);
 void ShowError(string message);
+void EditBookByManager(int BookId);
+void SelectBookByMember(int BookId);
 void MainMenu();
 void ManagerMenu();
 void SelectUserByManager(int UserId);
-void ShowBooksForMembers();
+void ShowBooksForMembers(int page = 1);
 void Profile();
-void ShowBorrowedBooksForMembers();
-void ShowBooksForManagers();
+void ShowBorrowedBooksForMembers(int page = 1);
+void ShowBooksForManagers(int page = 1, bool FilterBorrowed = false);
+void GiveBackBook(int BookId);
 void ShowUsersForManagers(int page = 1, bool FilterBorrowed = false);
 void AddManager();
+void AddBookByManager();
+void SelectBookByManager(int BookId);
 void Login();
 void SignUp();
 void SignOut();
@@ -61,7 +66,6 @@ bool IsNumber(string s)
 	}
 	return true;
 }
-
 
 void ClearConsole()
 {
@@ -101,6 +105,27 @@ void ShowUsersList(vector<User> users)
 		else
 		{
 			print("Role: Member\n");
+		}
+		cout << "-------------------------------------------------\n";
+	}
+}
+
+void ShowBooksList(vector<Book> books)
+{
+	for (Book book : books)
+	{
+		print("Id: " + to_string(book.Id) + "\n");
+		print("Name: " + book.Name + "\n");
+		print("Author: " + book.Author + "\n");
+		print("Genre: " + book.Genre + "\n");
+		print("Added Date: " + book.AddDate + "\n");
+		if (book.IsAvailable)
+		{
+			print("Status: Available\n");
+		}
+		else
+		{
+			print("Status: Not Available\n");
 		}
 		cout << "-------------------------------------------------\n";
 	}
@@ -231,11 +256,6 @@ void ManagerMenu()
 		MainMenu();
 		break;
 	}
-}
-
-void ShowBooksForMembers()
-{
-
 }
 
 void Profile()
@@ -393,15 +413,406 @@ void EditProfile()
 	}
 }
 
-void ShowBorrowedBooksForMembers()
+void BorrowBook(int BookId)
 {
+	BookCart cart;
+	cart.BookId = BookId;
+	cart.UserId = AuthUser.Id;
+	cart.IsGivenBack = false;
+	bookCartServices.Add(cart);
+	Book book = bookServices.Find(BookId);
+	book.IsAvailable = false;
+	bookServices.Update(book);
+}
+
+void SelectBookByMember(int BookId)
+{
+	ClearConsole();
+	if (!IsAuthenticated)
+	{
+		ShowError("User Is Not Authenticated!!");
+		Start();
+		return;
+	}
+	Book book = bookServices.Find(BookId);
+	MenuInput menu;
+	menu.Title = "Book Detail";
+
+	menu.Items.emplace_back("Name : " + book.Name);
+	menu.Items.emplace_back("Author : " + book.Author);
+	menu.Items.emplace_back("Genre : " + book.Genre);
+	menu.Items.emplace_back("Added Date : " + book.AddDate);
+	if (book.IsAvailable)
+	{
+		menu.Items.emplace_back("Status : Available");
+	}
+	else
+	{
+		menu.Items.emplace_back("Status : Not Available");
+	}
+	menu.Items.emplace_back("\n----------------------------------------\n");
+	menu.Items.emplace_back("1. Borrow");
+	menu.Items.emplace_back("8. Back");
+
+	ShowMenu(menu);
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		SelectBookByMember(BookId);
+		return;
+	}
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		BorrowBook(BookId);
+		ShowError("Book Borrowed Successfully!!");
+		ShowBooksForMembers();
+		break;
+
+	case 8:
+		ShowBooksForMembers();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		SelectBookByMember(BookId);
+		break;
+	}
+}
+
+void ShowBooksForMembers(int page)
+{
+	ClearConsole();
+	MenuInput menu;
+	menu.Title = "Books | Page " + to_string(page);
+	ShowMenu(menu);
+
+	vector<Book> books;
+
+	{
+		vector<Book> temp = bookServices.AllBooks();
+		for (Book book : temp)
+		{
+			if (book.IsAvailable)
+			{
+				books.emplace_back(book);
+			}
+		}
+	}
+
+	books = bookServices.GetBooksPaged(books, 10, page);
+
+	ShowBooksList(books);
+	cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 8. Back\n";
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowBooksForMembers(page);
+		return;
+	}
+
+	key = stoi(k);
+	string temp;
+	int l;
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowBooksForMembers(page);
+		break;
+
+	case 2:
+		page++;
+		ShowBooksForMembers(page);
+		break;
+
+	case 3:
+		print("Book Id: ");
+
+		cin >> temp;
+		if (!IsNumber(temp))
+		{
+			ShowError("Invalid Input!!");
+			ShowBooksForMembers(page);
+			break;;
+		}
+		l = stoi(temp);
+
+		if (!bookServices.IsExist(l) && !bookServices.Find(l).IsAvailable)
+		{
+			ShowError("Book not found!!");
+			ShowBooksForMembers(page);
+			break;
+		}
+
+		SelectBookByMember(l);
+		break;
+
+	case 4:
+		//TODO
+		break;
+
+	case 8:
+		MainMenu();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowBooksForMembers(page);
+		break;
+	}
 
 }
 
-// /////////////
-
-void ShowBooksForManagers()
+void GiveBackBook(int BookId)
 {
+	BookCart cart = bookCartServices.Find(BookId);
+	if (cart.UserId != AuthUser.Id)
+	{
+		ShowError("Book Not Found!!");
+		ShowBorrowedBooksForMembers();
+		return;
+	}
+
+	Book book = bookServices.Find(BookId);
+	book.IsAvailable = true;
+	bookServices.Update(book);
+
+	bookCartServices.Remove(BookId);
+	ShowError("The Book Given back Successfully!!");
+	ShowBorrowedBooksForMembers();
+}
+
+void ShowBorrowedBooksForMembers(int page)
+{
+	ClearConsole();
+	MenuInput menu;
+	menu.Title = "My Borrowed Books";
+	ShowMenu(menu);
+
+	vector<Book> books;
+	{
+		vector<BookCart> CartsUser = bookCartServices.GetAllCartsForUser(AuthUser.Id);
+		for (BookCart cart : CartsUser)
+		{
+			books.emplace_back(bookServices.Find(cart.BookId));
+		}
+	}
+
+	books = bookServices.GetBooksPaged(books, 10, page);
+	ShowBooksList(books);
+	cout << "1. Previous Page | 2. Next Page | 3.Give Back Book | 8. Back\n";
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowBorrowedBooksForMembers(page);
+		return;
+	}
+
+	key = stoi(k);
+	string temp;
+	int l;
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowBorrowedBooksForMembers(page);
+		break;
+
+	case 2:
+		page++;
+		ShowBorrowedBooksForMembers(page);
+		break;
+
+	case 3:
+		print("Book Id: ");
+
+		cin >> temp;
+		if (!IsNumber(temp))
+		{
+			ShowError("Invalid Input!!");
+			ShowBorrowedBooksForMembers(page);
+			break;;
+		}
+		l = stoi(temp);
+
+		if (!bookServices.IsExist(l) && !bookServices.Find(l).IsAvailable)
+		{
+			ShowError("Book not found!!");
+			ShowBorrowedBooksForMembers(page);
+			break;
+		}
+
+		GiveBackBook(l);
+		break;
+
+	case 4:
+		//TODO
+		break;
+
+	case 8:
+		MainMenu();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowBorrowedBooksForMembers(page);
+		break;
+	}
+}
+
+void AddBookByManager()
+{
+	ClearConsole();
+	MenuInput menu;
+	menu.Title = "Add Books";
+	ShowMenu(menu);
+	Book book;
+	book.Id = bookServices.LastId() + 1;
+	book.IsAvailable = true;
+	print("Name : ");
+	cin >> book.Name;
+	print("Author : ");
+	cin >> book.Author;
+	print("Genre : ");
+	cin >> book.Genre;
+
+	bookServices.Add(book);
+	ShowError("Book Added Successfully");
+	ShowBooksForManagers();
+}
+
+void ShowBooksForManagers(int page, bool FilterBorrowed)
+{
+	ClearConsole();
+	MenuInput menu;
+	menu.Title = "Books | Page " + to_string(page);
+	ShowMenu(menu);
+
+	vector<Book> books;
+
+	if (FilterBorrowed)
+	{
+		vector<Book> temp = bookServices.AllBooks();
+		for (Book book : temp)
+		{
+			if (!book.IsAvailable)
+			{
+				books.emplace_back(book);
+			}
+		}
+	}
+	else
+	{
+		books = bookServices.AllBooks();
+	}
+
+	books = bookServices.GetBooksPaged(books, 10, page);
+
+	ShowBooksList(books);
+	if (FilterBorrowed)
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Remove Filter | 8. Back\n";
+	}
+	else
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Filter Borrowed Books | 8. Back\n";
+	}
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowBooksForManagers(page, FilterBorrowed);
+		return;
+	}
+
+	key = stoi(k);
+	string temp;
+	int l;
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowBooksForManagers(page, FilterBorrowed);
+		break;
+
+	case 2:
+		page++;
+		ShowBooksForManagers(page, FilterBorrowed);
+		break;
+
+	case 3:
+		print("Book Id: ");
+
+		cin >> temp;
+		if (!IsNumber(temp))
+		{
+			ShowError("Invalid Input!!");
+			ShowBooksForManagers(page, FilterBorrowed);
+			break;;
+		}
+		l = stoi(temp);
+
+		if (!bookServices.IsExist(l))
+		{
+			ShowError("Book not found!!");
+			ShowBooksForManagers(page, FilterBorrowed);
+			break;
+		}
+
+		SelectBookByManager(l);
+		break;
+
+	case 4:
+		AddBookByManager();
+		break;
+
+	case 5:
+		ShowBooksForManagers(page, !FilterBorrowed);
+		break;
+
+	case 8:
+		ManagerMenu();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowBooksForManagers(page, FilterBorrowed);
+		break;
+	}
 
 }
 
@@ -443,7 +854,7 @@ void SelectUserByManager(int UserId)
 	if (!IsNumber(k))
 	{
 		ShowError("Invalid Input!!");
-		Profile();
+		SelectUserByManager(UserId);
 		return;
 	}
 
@@ -465,6 +876,154 @@ void SelectUserByManager(int UserId)
 		break;
 	}
 
+}
+
+void EditBookByManager(int BookId)
+{
+	ClearConsole();
+	if (!IsAuthenticated)
+	{
+		ShowError("User Is Not Authenticated!!");
+		Start();
+		return;
+	}
+	Book book = bookServices.Find(BookId);
+	MenuInput menu;
+	menu.Title = "Edit Book";
+	menu.Items.emplace_back("What Do You Want To Change?\n");
+	menu.Items.emplace_back("1. Name");
+	menu.Items.emplace_back("2. Author");
+	menu.Items.emplace_back("3. Genre");
+	menu.Items.emplace_back("");
+	menu.Items.emplace_back("8. Back");
+
+	ShowMenu(menu);
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		EditBookByManager(BookId);
+		return;
+	}
+
+	string newGenre, newName, newAuthor;
+	char fl[100];
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		print("New Name : ");
+		cin >> newName;
+
+		book.Name = newName;
+		bookServices.Update(book);
+		ShowError("Name Changed Successfully!!");
+		EditBookByManager(BookId);
+		break;
+
+	case 2:
+		print("New Author : ");
+		cin >> newAuthor;
+
+		book.Author = newAuthor;
+
+		bookServices.Update(book);
+
+		ShowError("Author Changed Successfully!!");
+		EditBookByManager(BookId);
+		break;
+
+	case 3:
+		print("New Genre : ");
+
+		cin >> newGenre;
+
+		book.Genre = newGenre;
+
+		bookServices.Update(book);
+
+		ShowError("Genre Changed Successfully!!");
+		EditBookByManager(BookId);
+		break;
+
+	case 8:
+		SelectBookByManager(BookId);
+		break;
+	default:
+		ShowError("Invalid Input!!");
+		EditBookByManager(BookId);
+		break;
+	}
+}
+
+void SelectBookByManager(int BookId)
+{
+	ClearConsole();
+	if (!IsAuthenticated)
+	{
+		ShowError("User Is Not Authenticated!!");
+		Start();
+		return;
+	}
+	Book book = bookServices.Find(BookId);
+	MenuInput menu;
+	menu.Title = "Book Detail";
+
+	menu.Items.emplace_back("Name : " + book.Name);
+	menu.Items.emplace_back("Author : " + book.Author);
+	menu.Items.emplace_back("Genre : " + book.Genre);
+	menu.Items.emplace_back("Added Date : " + book.AddDate);
+	if (book.IsAvailable)
+	{
+		menu.Items.emplace_back("Status : Available");
+	}
+	else
+	{
+		menu.Items.emplace_back("Status : Not Available");
+	}
+	menu.Items.emplace_back("\n----------------------------------------\n");
+	menu.Items.emplace_back("1. Delete");
+	menu.Items.emplace_back("2. Edit");
+	menu.Items.emplace_back("8. Back");
+
+	ShowMenu(menu);
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		SelectBookByManager(BookId);
+		return;
+	}
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+
+		bookServices.Remove(book.Id);
+		ShowError("Book With Id " + to_string(book.Id) + " Deleted Successfully!!");
+		ShowBooksForManagers();
+		break;
+
+	case 2:
+		EditBookByManager(BookId);
+		break;
+	case 8:
+		ShowBooksForManagers();
+		break;
+	default:
+		ShowError("Invalid Input!!");
+		SelectBookByManager(BookId);
+		break;
+	}
 }
 
 void ShowUsersForManagers(int page, bool FilterBorrowed)
@@ -510,7 +1069,7 @@ void ShowUsersForManagers(int page, bool FilterBorrowed)
 	if (!IsNumber(k))
 	{
 		ShowError("Invalid Input!!");
-		Profile();
+		ShowUsersForManagers(page, FilterBorrowed);
 		return;
 	}
 
