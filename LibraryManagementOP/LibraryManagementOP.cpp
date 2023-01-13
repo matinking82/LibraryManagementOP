@@ -30,7 +30,7 @@ void ShowBooksForMembers();
 void Profile();
 void ShowBorrowedBooksForMembers();
 void ShowBooksForManagers();
-void ShowUsersForManagers(int page = 1);
+void ShowUsersForManagers(int page = 1, bool FilterBorrowed = false);
 void AddManager();
 void Login();
 void SignUp();
@@ -467,15 +467,42 @@ void SelectUserByManager(int UserId)
 
 }
 
-void ShowUsersForManagers(int page)
+void ShowUsersForManagers(int page, bool FilterBorrowed)
 {
 	ClearConsole();
 	MenuInput menu;
 	menu.Title = "Users | Page " + to_string(page);
 	ShowMenu(menu);
-	vector<User> users = userSevices.GetUsersPaged(userSevices.AllUsers(), 10, page);
+
+	vector<User> users;
+	if (FilterBorrowed)
+	{
+		vector<User> temp = userSevices.AllUsers();
+
+		for (User user : temp)
+		{
+			if (bookCartServices.GetBorrowingCountForUser(user.Id) != 0)
+			{
+				users.emplace_back(user);
+			}
+		}
+	}
+	else
+	{
+		users = userSevices.AllUsers();
+	}
+
+	users = userSevices.GetUsersPaged(users, 10, page);
+
 	ShowUsersList(users);
-	cout << "1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 5. Search | 8. Back\n";
+	if (FilterBorrowed)
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select User | 4. Remove Filter | 8. Back\n";
+	}
+	else
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 8. Back\n";
+	}
 	int key;
 	string k;
 	cin >> k;
@@ -498,12 +525,12 @@ void ShowUsersForManagers(int page)
 		{
 			page = 1;
 		}
-		ShowUsersForManagers(page);
+		ShowUsersForManagers(page, FilterBorrowed);
 		break;
 
 	case 2:
 		page++;
-		ShowUsersForManagers(page);
+		ShowUsersForManagers(page, FilterBorrowed);
 		break;
 
 	case 3:
@@ -513,7 +540,7 @@ void ShowUsersForManagers(int page)
 		if (!IsNumber(temp))
 		{
 			ShowError("Invalid Input!!");
-			ShowUsersForManagers(page);
+			ShowUsersForManagers(page, FilterBorrowed);
 			break;;
 		}
 		l = stoi(temp);
@@ -521,7 +548,7 @@ void ShowUsersForManagers(int page)
 		if (!userSevices.IsExist(l))
 		{
 			ShowError("User not found!!");
-			ShowUsersForManagers(page);
+			ShowUsersForManagers(page, FilterBorrowed);
 			break;
 		}
 
@@ -529,19 +556,16 @@ void ShowUsersForManagers(int page)
 		break;
 
 	case 4:
-
-		break;
-
-	case 5:
-
+		ShowUsersForManagers(page, !FilterBorrowed);
 		break;
 
 	case 8:
 		ManagerMenu();
 		break;
+
 	default:
 		ShowError("Invalid Input!!");
-		ShowUsersForManagers();
+		ShowUsersForManagers(page, FilterBorrowed);
 		break;
 	}
 
