@@ -100,3 +100,9 @@ MMKK
 MaKi
 -------
 0
+20
+test
+123
+test Exam
+-------
+0

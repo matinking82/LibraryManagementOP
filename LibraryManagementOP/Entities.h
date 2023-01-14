@@ -407,6 +407,34 @@ public:
 class BookServices
 {
 	string path;
+private:
+	bool IsMatch(string s1, string s2)
+	{
+		int len1 = s1.length();
+		int len2 = s2.length();
+
+		if (len2 > len1)
+		{
+			return false;
+		}
+
+		int s = len1 - len2;
+		for (; s >= 0; s--)
+		{
+			string temp = s1.substr(s, len2);
+			for (int i = 0; i < len2; i++)
+			{
+				temp[i] = tolower(temp[i]);
+				s2[i] = tolower(s2[i]);
+			}
+			if (temp == s2)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 public:
 	BookServices(string DbPath)
 	{
@@ -509,6 +537,23 @@ public:
 		writer << book.IsAvailable << endl;
 
 		writer.close();
+	}
+
+	vector<Book> Search(string searchKey, bool name, bool author)
+	{
+		vector<Book> books = AllBooks();
+
+		vector<Book> result;
+
+		for (Book book : books)
+		{
+			if ((name && IsMatch(book.Name, searchKey)) || (author && IsMatch(book.Author, searchKey)))
+			{
+				result.emplace_back(book);
+			}
+		}
+
+		return result;
 	}
 
 	void Update(Book book)

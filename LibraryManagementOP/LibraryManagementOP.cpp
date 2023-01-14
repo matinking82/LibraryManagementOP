@@ -36,6 +36,7 @@ void GiveBackBook(int BookId);
 void ShowUsersForManagers(int page = 1, bool FilterBorrowed = false);
 void AddManager();
 void AddBookByManager();
+void SearchBookResult(string Searchkey, bool name, bool author, int page = 1);
 void SelectBookByManager(int BookId);
 void Login();
 void SignUp();
@@ -495,6 +496,94 @@ void SelectBookByMember(int BookId)
 	}
 }
 
+void SearchBookResult(string Searchkey, bool name, bool author, int page)
+{
+	ClearConsole();
+	MenuInput menu;
+	menu.Title = "Search : " + Searchkey + " | Page " + to_string(page);
+	ShowMenu(menu);
+
+	vector<Book> books;
+
+	{
+		vector<Book> temp = bookServices.Search(Searchkey, name, author);
+		for (Book book : temp)
+		{
+			if (book.IsAvailable)
+			{
+				books.emplace_back(book);
+			}
+		}
+	}
+
+	books = bookServices.GetBooksPaged(books, 10, page);
+
+	ShowBooksList(books);
+	cout << "1. Previous Page | 2. Next Page | 3.Select Book | 8. Back\n";
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		SearchBookResult(Searchkey, name, author, page);
+		return;
+	}
+
+	key = stoi(k);
+	string temp;
+	int l;
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		SearchBookResult(Searchkey, name, author, page);
+		break;
+
+	case 2:
+		page++;
+		SearchBookResult(Searchkey, name, author, page);
+		break;
+
+	case 3:
+		print("Book Id: ");
+
+		cin >> temp;
+		if (!IsNumber(temp))
+		{
+			ShowError("Invalid Input!!");
+			SearchBookResult(Searchkey, name, author, page);
+			break;
+		}
+		l = stoi(temp);
+
+		if (!bookServices.IsExist(l) || !bookServices.Find(l).IsAvailable)
+		{
+			ShowError("Book not found!!");
+			SearchBookResult(Searchkey, name, author, page);
+			break;
+		}
+
+		SelectBookByMember(l);
+		break;
+
+	case 8:
+		ShowBooksForMembers();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		SearchBookResult(Searchkey, name, author, page);
+		break;
+	}
+}
+
 void SearchBookForMember()
 {
 	ClearConsole();
@@ -519,25 +608,26 @@ void SearchBookForMember()
 	}
 
 	key = stoi(k);
-
-	print("Search Key: ");
+	if (key != 8)
+	{
+		print("Search Key: ");
+	}
 	char temp[100];
 	cin.getline(temp, 100);
 	cin.getline(temp, 100);
 	string SearchKey = temp;
-
 	switch (key)
 	{
 	case 1:
-
+		SearchBookResult(SearchKey, true, false);
 		break;
 
 	case 2:
-
+		SearchBookResult(SearchKey, false, true);
 		break;
 
 	case 3:
-
+		SearchBookResult(SearchKey, true, true);
 		break;
 
 	case 8:
