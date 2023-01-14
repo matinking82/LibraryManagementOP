@@ -608,13 +608,13 @@ void SearchBookForMember()
 	}
 
 	key = stoi(k);
-	if (key != 8)
+	char temp[100];
+	if (key > 0 && key <= 3)
 	{
 		print("Search Key: ");
+		cin.getline(temp, 100);
+		cin.getline(temp, 100);
 	}
-	char temp[100];
-	cin.getline(temp, 100);
-	cin.getline(temp, 100);
 	string SearchKey = temp;
 	switch (key)
 	{
