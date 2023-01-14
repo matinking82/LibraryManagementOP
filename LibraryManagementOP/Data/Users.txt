@@ -94,12 +94,6 @@ Adel1380
 Adel
 -------
 0
-18
-ali_khatar
-abdool
-alinosrati
--------
-0
 19
 MMKK
 1234

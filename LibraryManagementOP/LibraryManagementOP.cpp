@@ -44,6 +44,7 @@ void Authenticate();
 void SearchBookForMember();
 void Start();
 bool IsNumber(string s);
+void ShowBooksList(vector<Book> books, bool BorrowedBy = false);
 void EditProfile();
 
 int main()
@@ -111,7 +112,7 @@ void ShowUsersList(vector<User> users)
 	}
 }
 
-void ShowBooksList(vector<Book> books)
+void ShowBooksList(vector<Book> books, bool BorrowedBy)
 {
 	for (Book book : books)
 	{
@@ -127,6 +128,12 @@ void ShowBooksList(vector<Book> books)
 		else
 		{
 			print("Status: Not Available\n");
+			if (BorrowedBy)
+			{
+				BookCart cart = bookCartServices.Find(book.Id);
+				User user = userSevices.Find(cart.UserId);
+				print("Borrowed By: " + user.Username + "(Id:" + to_string(user.Id) + ")" + "\n");
+			}
 		}
 		cout << "-------------------------------------------------\n";
 	}
@@ -713,11 +720,11 @@ void ShowBorrowedBooksForMembers(int page)
 		{
 			ShowError("Invalid Input!!");
 			ShowBorrowedBooksForMembers(page);
-			break;;
+			break;
 		}
 		l = stoi(temp);
 
-		if (!bookServices.IsExist(l) && !bookServices.Find(l).IsAvailable)
+		if (!bookServices.IsExist(l) || bookServices.Find(l).IsAvailable)
 		{
 			ShowError("Book not found!!");
 			ShowBorrowedBooksForMembers(page);
@@ -798,7 +805,7 @@ void ShowBooksForManagers(int page, bool FilterBorrowed)
 
 	books = bookServices.GetBooksPaged(books, 10, page);
 
-	ShowBooksList(books);
+	ShowBooksList(books, true);
 	if (FilterBorrowed)
 	{
 		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Remove Filter | 8. Back\n";
@@ -891,7 +898,7 @@ void SelectUserByManager(int UserId)
 	}
 	User user = userSevices.Find(UserId);
 	MenuInput menu;
-	menu.Title = "Profile";
+	menu.Title = "User";
 
 	menu.Items.emplace_back("Username : " + user.Username);
 	menu.Items.emplace_back("Fullname : " + user.FullName);
@@ -904,7 +911,26 @@ void SelectUserByManager(int UserId)
 		menu.Items.emplace_back("Role : Member");
 	}
 	menu.Items.emplace_back("Register Date : " + user.SignDate);
-	menu.Items.emplace_back("Borrowed Books : " + bookCartServices.GetBorrowingCountForUser(UserId));
+
+	int BorrowCount = bookCartServices.GetBorrowingCountForUser(UserId);
+	if (BorrowCount > 0)
+	{
+		menu.Items.emplace_back("\n----------------------------------------");
+		menu.Items.emplace_back("\nBorrowed Books:");
+		vector<BookCart> carts = bookCartServices.GetAllCartsForUser(UserId);
+		int i = 1;
+		for (BookCart cart : carts)
+		{
+			Book book = bookServices.Find(cart.BookId);
+			menu.Items.emplace_back(to_string(i) + ". Name: " + book.Name + " | Author: " + book.Author + " | Id: " + to_string(book.Id) + "\n");
+			i++;
+		}
+	}
+	else
+	{
+		menu.Items.emplace_back("Borrowed Books : " + to_string(BorrowCount));
+	}
+
 	menu.Items.emplace_back("\n----------------------------------------\n");
 	menu.Items.emplace_back("1. Delete User");
 	menu.Items.emplace_back("8. Back");
@@ -1048,7 +1074,23 @@ void SelectBookByManager(int BookId)
 	else
 	{
 		menu.Items.emplace_back("Status : Not Available");
+		menu.Items.emplace_back("\n----------------------------------------");
+		BookCart cart = bookCartServices.Find(book.Id);
+		User user = userSevices.Find(cart.UserId);
+		menu.Items.emplace_back("Currently Borrowed By\n\n");
+		menu.Items.emplace_back("Username : " + user.Username);
+		menu.Items.emplace_back("FullName : " + user.FullName);
+		if (user.IsManager)
+		{
+			menu.Items.emplace_back("Role : Manager");
+		}
+		else
+		{
+			menu.Items.emplace_back("Role : Member");
+		}
 	}
+
+
 	menu.Items.emplace_back("\n----------------------------------------\n");
 	menu.Items.emplace_back("1. Delete");
 	menu.Items.emplace_back("2. Edit");
