@@ -840,6 +840,32 @@ public:
 		return result;
 	}
 
+	void DeleteAllCommentsForUser(int userId)
+	{
+		vector<Comment> comments = AllComments();
+
+		for (Comment comment : comments)
+		{
+			if (comment.UserId == userId)
+			{
+				Remove(comment.Id);
+			}
+		}
+	}
+
+	void DeleteAllCommentsForBook(int bookId)
+	{
+		vector<Comment> comments = AllComments();
+
+		for (Comment comment : comments)
+		{
+			if (comment.BookId == bookId)
+			{
+				Remove(comment.Id);
+			}
+		}
+	}
+
 	vector<Comment> GetCommentsPaged(vector<Comment> comments, int count, int page = 1)
 	{
 		vector<Comment> Result;
@@ -881,6 +907,10 @@ public:
 		ofstream writer(path);
 		for (Comment comment : comments)
 		{
+			if (comment.Id == Id)
+			{
+				continue;
+			}
 			writer << comment.Id << endl;
 			writer << comment.Star << endl;
 			writer << comment.Text << endl;
@@ -888,6 +918,18 @@ public:
 			writer << comment.BookId << endl;
 		}
 		writer.close();
+	}
+
+	Comment Find(int Id)
+	{
+		vector<Comment> comments = AllComments();
+		for (Comment comment : comments)
+		{
+			if (comment.Id == Id)
+			{
+				return comment;
+			}
+		}
 	}
 
 	void Add(Comment comment)
@@ -925,6 +967,19 @@ public:
 		reader.close();
 
 		return Id;
+	}
+
+	bool IsExist(int Id)
+	{
+		vector<Comment> comments = AllComments();
+		for (Comment comment : comments)
+		{
+			if (comment.Id == Id)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	vector<Comment> CommentsForBook(int BookId)
@@ -1127,6 +1182,7 @@ public:
 			}
 		}
 	}
+
 	void Add(BookCart bookCart)
 	{
 		ofstream writer(path, ios::app);

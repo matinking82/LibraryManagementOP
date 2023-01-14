@@ -40,6 +40,7 @@ void AddBookByManager();
 void SearchBookResult(string Searchkey, bool name, bool author, int page = 1, bool ByGenre = false);
 void SelectBookByManager(int BookId);
 void Login();
+void ShowCommentsForManager(int bookId, int page = 1);
 void SignUp();
 void SignOut();
 void Authenticate();
@@ -456,6 +457,7 @@ void BorrowBook(int BookId)
 
 void ShowCommentsForMember(int BookId, int page)
 {
+	ClearConsole();
 	Book book = bookServices.Find(BookId);
 	MenuInput menu;
 	menu.Title = "Page " + to_string(page) + " | Comments For '" + book.Name + "'(star :" + commentServices.GetAverageStarForBook(BookId) + ") : ";
@@ -1176,11 +1178,24 @@ void SelectUserByManager(int UserId)
 	}
 
 	key = stoi(k);
+	vector<BookCart> carts;
 	switch (key)
 	{
 	case 1:
 
 		userSevices.Remove(user.Username);
+
+		carts = bookCartServices.GetAllCartsForUser(user.Id);
+		for (BookCart cart : carts)
+		{
+			Book book = bookServices.Find(cart.BookId);
+			book.IsAvailable = true;
+			bookServices.Update(book);
+
+			bookCartServices.Remove(cart.BookId);
+		}
+		commentServices.DeleteAllCommentsForUser(user.Id);
+
 		ShowError("User With Id " + to_string(user.Id) + " Deleted Successfully!!");
 		ShowUsersForManagers();
 		break;
@@ -1277,6 +1292,86 @@ void EditBookByManager(int BookId)
 	}
 }
 
+void ShowCommentsForManager(int bookId, int page)
+{
+	ClearConsole();
+	Book book = bookServices.Find(bookId);
+	MenuInput menu;
+	menu.Title = "Page " + to_string(page) + " | Comments For '" + book.Name + "'(star :" + commentServices.GetAverageStarForBook(bookId) + ") : ";
+	ShowMenu(menu);
+
+	vector<Comment> comments = commentServices.GetCommentsForBook(bookId);
+
+	comments = commentServices.GetCommentsPaged(comments, 10, page);
+	ShowCommentsList(comments, true);
+	cout << "1. Previous Page | 2. Next Page | 3. Delete a Comment | 8. Back\n";
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowCommentsForManager(bookId, page);
+		return;
+	}
+
+	key = stoi(k);
+	int l;
+	string temp;
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowCommentsForManager(bookId, page);
+		break;
+
+	case 2:
+		page++;
+		ShowCommentsForManager(bookId, page);
+		break;
+
+	case 3:
+
+		print("Comment Id: ");
+		cin >> temp;
+
+		if (!IsNumber(temp))
+		{
+			ShowError("Invalid Input!!");
+			ShowCommentsForManager(bookId, page);
+			break;
+		}
+
+		l = stoi(temp);
+		if (!commentServices.IsExist(l) || commentServices.Find(l).BookId != bookId)
+		{
+			ShowError("Invalid Input!!");
+			ShowCommentsForManager(bookId, page);
+			break;
+		}
+
+		commentServices.Remove(l);
+		ShowError("Comment Deleted Successfully!!");
+		ShowCommentsForManager(bookId, page);
+		break;
+
+	case 8:
+		SelectBookByManager(bookId);
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowCommentsForManager(bookId, page);
+		break;
+	}
+}
+
 void SelectBookByManager(int BookId)
 {
 	ClearConsole();
@@ -1321,6 +1416,7 @@ void SelectBookByManager(int BookId)
 	menu.Items.emplace_back("\n----------------------------------------\n");
 	menu.Items.emplace_back("1. Delete");
 	menu.Items.emplace_back("2. Edit");
+	menu.Items.emplace_back("3. Manage Comments");
 	menu.Items.emplace_back("8. Back");
 
 	ShowMenu(menu);
@@ -1342,6 +1438,11 @@ void SelectBookByManager(int BookId)
 	case 1:
 
 		bookServices.Remove(book.Id);
+		if (!book.IsAvailable)
+		{
+			bookCartServices.Remove(book.Id);
+		}
+		commentServices.DeleteAllCommentsForBook(book.Id);
 		ShowError("Book With Id " + to_string(book.Id) + " Deleted Successfully!!");
 		ShowBooksForManagers();
 		break;
@@ -1349,6 +1450,11 @@ void SelectBookByManager(int BookId)
 	case 2:
 		EditBookByManager(BookId);
 		break;
+
+	case 3:
+		ShowCommentsForManager(BookId);
+		break;
+
 	case 8:
 		ShowBooksForManagers();
 		break;
