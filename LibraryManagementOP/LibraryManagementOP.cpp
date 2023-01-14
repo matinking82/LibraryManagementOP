@@ -24,6 +24,7 @@ void ShowMenu(MenuInput menu);
 void ShowUsersList(vector<User> users);
 void ShowError(string message);
 void EditBookByManager(int BookId);
+void ShowCommentsForMember(int BookId, int page = 1);
 void SelectBookByMember(int BookId);
 void MainMenu();
 void ManagerMenu();
@@ -137,6 +138,25 @@ void ShowBooksList(vector<Book> books, bool BorrowedBy)
 			}
 		}
 		cout << "-------------------------------------------------\n";
+	}
+}
+
+void ShowCommentsList(vector<Comment> comments, bool showId = false)
+{
+	for (Comment comment : comments)
+	{
+		User user = userSevices.Find(comment.UserId);
+		if (showId)
+		{
+			print(user.FullName + " (star: " + to_string(comment.Star) + ") (CommentId: " + to_string(comment.Id) + "):\n");
+		}
+		else
+		{
+			print(user.FullName + " (star: " + to_string(comment.Star) + ") :\n");
+		}
+		print("\t" + comment.Text);
+
+		cout << "\n\n-------------------------------------------------\n";
 	}
 }
 
@@ -434,6 +454,96 @@ void BorrowBook(int BookId)
 	bookServices.Update(book);
 }
 
+void ShowCommentsForMember(int BookId, int page)
+{
+	Book book = bookServices.Find(BookId);
+	MenuInput menu;
+	menu.Title = "Page " + to_string(page) + " | Comments For '" + book.Name + "'(star :" + commentServices.GetAverageStarForBook(BookId) + ") : ";
+	ShowMenu(menu);
+
+	vector<Comment> comments = commentServices.GetCommentsForBook(BookId);
+
+	comments = commentServices.GetCommentsPaged(comments, 10, page);
+	ShowCommentsList(comments);
+	cout << "1. Previous Page | 2. Next Page | 3. Add a Comment | 8. Back\n";
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowCommentsForMember(BookId, page);
+		return;
+	}
+
+	key = stoi(k);
+	string temp;
+	Comment newComment;
+	int star;
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowCommentsForMember(BookId, page);
+		break;
+
+	case 2:
+		page++;
+		ShowCommentsForMember(BookId, page);
+		break;
+
+	case 3:
+		newComment.BookId = BookId;
+		newComment.Id = commentServices.LastId() + 1;
+		newComment.UserId = AuthUser.Id;
+
+		print("Star : ");
+		cin >> temp;
+		if (!IsNumber(temp))
+		{
+			ShowError("Invalid Input!!");
+			ShowCommentsForMember(BookId, page);
+			break;
+		}
+		star = stoi(temp);
+		if (star > 5 || star < 0)
+		{
+			ShowError("Invalid Input!!");
+			ShowCommentsForMember(BookId, page);
+			break;
+		}
+
+		char t[250];
+		print("comment : ");
+		cin.getline(t, 250);
+		cin.getline(t, 250);
+
+		newComment.Star = star;
+		newComment.Text = t;
+
+
+		commentServices.Add(newComment);
+		ShowError("Comment Added Successfully!!");
+		ShowCommentsForMember(BookId, page);
+		break;
+
+	case 8:
+		SelectBookByMember(BookId);
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowCommentsForMember(BookId, page);
+		break;
+	}
+}
+
 void SelectBookByMember(int BookId)
 {
 	ClearConsole();
@@ -461,6 +571,7 @@ void SelectBookByMember(int BookId)
 	}
 	menu.Items.emplace_back("\n----------------------------------------\n");
 	menu.Items.emplace_back("1. Borrow");
+	menu.Items.emplace_back("2. Comments");
 	menu.Items.emplace_back("8. Back");
 
 	ShowMenu(menu);
@@ -483,6 +594,10 @@ void SelectBookByMember(int BookId)
 		BorrowBook(BookId);
 		ShowError("Book Borrowed Successfully!!");
 		ShowBooksForMembers();
+		break;
+
+	case 2:
+		ShowCommentsForMember(book.Id);
 		break;
 
 	case 8:
@@ -822,10 +937,6 @@ void ShowBorrowedBooksForMembers(int page)
 		}
 
 		GiveBackBook(l);
-		break;
-
-	case 4:
-		//TODO
 		break;
 
 	case 8:

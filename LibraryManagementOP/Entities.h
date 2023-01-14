@@ -805,6 +805,55 @@ public:
 		return result;
 	}
 
+	vector<Comment> GetCommentsForBook(int bookId)
+	{
+		vector<Comment> comments = AllComments();
+		vector<Comment> result;
+		for (Comment comment : comments)
+		{
+			if (comment.BookId == bookId)
+			{
+				result.emplace_back(comment);
+			}
+		}
+		return result;
+	}
+
+	vector<Comment> GetCommentsPaged(vector<Comment> comments, int count, int page = 1)
+	{
+		vector<Comment> Result;
+		int start = 0;
+		start += (count * (page - 1));
+		for (; start < comments.size() && count > 0; start++)
+		{
+			Result.emplace_back(comments[start]);
+			count--;
+		}
+		return Result;
+	}
+
+	string GetAverageStarForBook(int bookId)
+	{
+		vector<Comment> comments = AllComments();
+		double sum = 0;
+		int count = 0;
+		for (Comment comment : comments)
+		{
+			if (comment.BookId == bookId)
+			{
+				sum += double(comment.Star);
+				count++;
+			}
+		}
+		if (count == 0)
+		{
+			return "0";
+		}
+
+		string res = to_string(sum / double(count));
+		return res.substr(0,3);
+	}
+
 	void Remove(int Id)
 	{
 		vector<Comment> comments = AllComments();
