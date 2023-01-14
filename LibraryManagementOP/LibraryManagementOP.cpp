@@ -29,7 +29,7 @@ void SelectBookByMember(int BookId);
 void MainMenu();
 void ManagerMenu();
 void SelectUserByManager(int UserId);
-void ShowBooksForMembers(int page = 1);
+void ShowBooksForMembers(int page = 1, bool ByGenre = false);
 void Profile();
 void ShowBorrowedBooksForMembers(int page = 1);
 void ShowBooksForManagers(int page = 1, bool FilterBorrowed = false);
@@ -37,7 +37,7 @@ void GiveBackBook(int BookId);
 void ShowUsersForManagers(int page = 1, bool FilterBorrowed = false);
 void AddManager();
 void AddBookByManager();
-void SearchBookResult(string Searchkey, bool name, bool author, int page = 1);
+void SearchBookResult(string Searchkey, bool name, bool author, int page = 1, bool ByGenre = false);
 void SelectBookByManager(int BookId);
 void Login();
 void SignUp();
@@ -611,7 +611,7 @@ void SelectBookByMember(int BookId)
 	}
 }
 
-void SearchBookResult(string Searchkey, bool name, bool author, int page)
+void SearchBookResult(string Searchkey, bool name, bool author, int page, bool ByGenre)
 {
 	ClearConsole();
 	MenuInput menu;
@@ -630,11 +630,21 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page)
 			}
 		}
 	}
-
+	if (ByGenre)
+	{
+		books = bookServices.SortBooksByGenre(books);
+	}
 	books = bookServices.GetBooksPaged(books, 10, page);
 
 	ShowBooksList(books);
-	cout << "1. Previous Page | 2. Next Page | 3.Select Book | 8. Back\n";
+	if (ByGenre)
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Date | 8. Back\n";
+	}
+	else
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Genre | 8. Back\n";
+	}
 
 	int key;
 	string k;
@@ -643,7 +653,7 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page)
 	if (!IsNumber(k))
 	{
 		ShowError("Invalid Input!!");
-		SearchBookResult(Searchkey, name, author, page);
+		SearchBookResult(Searchkey, name, author, page, ByGenre);
 		return;
 	}
 
@@ -658,12 +668,12 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page)
 		{
 			page = 1;
 		}
-		SearchBookResult(Searchkey, name, author, page);
+		SearchBookResult(Searchkey, name, author, page, ByGenre);
 		break;
 
 	case 2:
 		page++;
-		SearchBookResult(Searchkey, name, author, page);
+		SearchBookResult(Searchkey, name, author, page, ByGenre);
 		break;
 
 	case 3:
@@ -673,7 +683,7 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page)
 		if (!IsNumber(temp))
 		{
 			ShowError("Invalid Input!!");
-			SearchBookResult(Searchkey, name, author, page);
+			SearchBookResult(Searchkey, name, author, page, ByGenre);
 			break;
 		}
 		l = stoi(temp);
@@ -681,20 +691,23 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page)
 		if (!bookServices.IsExist(l) || !bookServices.Find(l).IsAvailable)
 		{
 			ShowError("Book not found!!");
-			SearchBookResult(Searchkey, name, author, page);
+			SearchBookResult(Searchkey, name, author, page, ByGenre);
 			break;
 		}
 
 		SelectBookByMember(l);
 		break;
+	case 4:
+		SearchBookResult(Searchkey, name, author, page, !ByGenre);
 
+		break;
 	case 8:
 		ShowBooksForMembers();
 		break;
 
 	default:
 		ShowError("Invalid Input!!");
-		SearchBookResult(Searchkey, name, author, page);
+		SearchBookResult(Searchkey, name, author, page, ByGenre);
 		break;
 	}
 }
@@ -755,7 +768,7 @@ void SearchBookForMember()
 	}
 }
 
-void ShowBooksForMembers(int page)
+void ShowBooksForMembers(int page, bool ByGenre)
 {
 	ClearConsole();
 	MenuInput menu;
@@ -774,11 +787,21 @@ void ShowBooksForMembers(int page)
 			}
 		}
 	}
-
+	if (ByGenre)
+	{
+		books = bookServices.SortBooksByGenre(books);
+	}
 	books = bookServices.GetBooksPaged(books, 10, page);
 
 	ShowBooksList(books);
-	cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 8. Back\n";
+	if (ByGenre)
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Date | 8. Back\n";
+	}
+	else
+	{
+		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Genre | 8. Back\n";
+	}
 
 	int key;
 	string k;
@@ -787,7 +810,7 @@ void ShowBooksForMembers(int page)
 	if (!IsNumber(k))
 	{
 		ShowError("Invalid Input!!");
-		ShowBooksForMembers(page);
+		ShowBooksForMembers(page, ByGenre);
 		return;
 	}
 
@@ -802,12 +825,12 @@ void ShowBooksForMembers(int page)
 		{
 			page = 1;
 		}
-		ShowBooksForMembers(page);
+		ShowBooksForMembers(page, ByGenre);
 		break;
 
 	case 2:
 		page++;
-		ShowBooksForMembers(page);
+		ShowBooksForMembers(page, ByGenre);
 		break;
 
 	case 3:
@@ -817,7 +840,7 @@ void ShowBooksForMembers(int page)
 		if (!IsNumber(temp))
 		{
 			ShowError("Invalid Input!!");
-			ShowBooksForMembers(page);
+			ShowBooksForMembers(page, ByGenre);
 			break;;
 		}
 		l = stoi(temp);
@@ -825,7 +848,7 @@ void ShowBooksForMembers(int page)
 		if (!bookServices.IsExist(l) || !bookServices.Find(l).IsAvailable)
 		{
 			ShowError("Book not found!!");
-			ShowBooksForMembers(page);
+			ShowBooksForMembers(page, ByGenre);
 			break;
 		}
 
@@ -836,13 +859,16 @@ void ShowBooksForMembers(int page)
 		SearchBookForMember();
 		break;
 
+	case 5:
+		ShowBooksForMembers(page, !ByGenre);
+		break;
 	case 8:
 		MainMenu();
 		break;
 
 	default:
 		ShowError("Invalid Input!!");
-		ShowBooksForMembers(page);
+		ShowBooksForMembers(page, ByGenre);
 		break;
 	}
 

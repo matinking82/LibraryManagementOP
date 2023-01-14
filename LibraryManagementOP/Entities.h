@@ -491,6 +491,27 @@ public:
 		return result;
 	}
 
+	vector<Book> SortBooksByGenre(vector<Book> books)
+	{
+		bool IsContinue = true;
+		while (IsContinue)
+		{
+			IsContinue = false;
+
+			for (int i = 0; i < books.size() - 1; i++)
+			{
+				if (books[i].Genre.compare(books[i + 1].Genre) > 0)
+				{
+					Book t = books[i];
+					books[i] = books[i + 1];
+					books[i + 1] = t;
+					IsContinue = true;
+				}
+			}
+		}
+		return books;
+	}
+
 	vector<Book> GetBooksPaged(vector<Book> books, int count, int page = 1)
 	{
 		vector<Book> Result;
@@ -851,7 +872,7 @@ public:
 		}
 
 		string res = to_string(sum / double(count));
-		return res.substr(0,3);
+		return res.substr(0, 3);
 	}
 
 	void Remove(int Id)
