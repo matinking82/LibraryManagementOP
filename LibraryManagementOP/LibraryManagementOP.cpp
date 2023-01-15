@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include "Entities.h"
+#include <conio.h>
 
 UserServices userSevices("Data/Users.txt");
 BookServices bookServices("Data/Books.txt");
@@ -18,6 +19,7 @@ struct MenuInput
 	vector<string> Items;
 };
 
+string GetPassword();
 void ClearConsole();
 void print(string n);
 void ShowMenu(MenuInput menu);
@@ -53,6 +55,44 @@ void EditProfile();
 int main()
 {
 	Start();
+}
+
+
+string GetPassword()
+{
+	string pass = "";
+	char inp;
+
+	do
+	{
+		inp = _getch();
+
+
+		if (inp == '\b')
+		{
+			int len = pass.length();
+			if (len > 0)
+			{
+				pass = pass.substr(0, len - 1);
+				cout << "\b \b";
+			}
+			continue;
+		}
+		if (inp == -32)
+		{
+			_getch();
+		}
+
+		if (!((inp >= 48 && inp <= 57) || (inp >= 64 && inp <= 90) || (inp >= 97 && inp <= 122) || inp == 46))
+		{
+			continue;
+		}
+		pass += inp;
+		cout << "*";
+
+	} while (inp != '\r');
+	cout << '\n';
+	return pass;
 }
 
 bool IsNumber(string s)
@@ -402,9 +442,9 @@ void EditProfile()
 
 	case 2:
 		print("Old Password : ");
-		cin >> oldPass;
+		oldPass = GetPassword();
 		print("New Password : ");
-		cin >> newPass;
+		newPass = GetPassword();
 
 		if (AuthUser.Password != oldPass)
 		{
@@ -1615,12 +1655,12 @@ void Login()
 	MenuInput menu;
 	menu.Title = "Login";
 	ShowMenu(menu);
-	string Username, Password;
+	string Username;
 
 	print("Username : ");
 	cin >> Username;
 	print("Password : ");
-	cin >> Password;
+	string Password = GetPassword();
 
 	if (!userSevices.IsExist(Username))
 	{
@@ -1649,12 +1689,12 @@ void SignUp()
 	MenuInput menu;
 	menu.Title = "SignUp";
 	ShowMenu(menu);
-	string Username, Password;
+	string Username;
 	char FullName[100];
 	print("Username : ");
 	cin >> Username;
 	print("Password : ");
-	cin >> Password;
+	string Password = GetPassword();
 	print("FullName : ");
 	cin.getline(FullName, 100);
 	cin.getline(FullName, 100);

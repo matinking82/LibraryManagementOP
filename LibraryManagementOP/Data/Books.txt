@@ -106,12 +106,6 @@ it
 was
 
 1
-21
-if it was true
-George maddison mc kelny
-Knights
-
-0
 22
 Moda
 Jp
@@ -122,5 +116,11 @@ Romance
 clean code
 uncle bob
 horror
+
+1
+24
+norway
+sols
+Sport
 
 1
