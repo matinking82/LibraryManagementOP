@@ -1201,7 +1201,10 @@ void SelectUserByManager(int UserId)
 	}
 
 	menu.Items.emplace_back("\n----------------------------------------\n");
-	menu.Items.emplace_back("1. Delete User");
+	if (!(user.Id == AuthUser.Id))
+	{
+		menu.Items.emplace_back("1. Delete User");
+	}
 	menu.Items.emplace_back("8. Back");
 
 	ShowMenu(menu);
@@ -1222,6 +1225,12 @@ void SelectUserByManager(int UserId)
 	switch (key)
 	{
 	case 1:
+
+		if (user.Id == AuthUser.Id)
+		{
+			ShowError("Invalid Input!!");
+			SelectUserByManager(UserId);
+		}
 
 		userSevices.Remove(user.Username);
 
