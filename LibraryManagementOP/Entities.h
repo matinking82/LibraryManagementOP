@@ -1196,3 +1196,12 @@ public:
 		writer.close();
 	}
 };
+
+class DateTools//Format "Y/M/D 00:00"
+{
+public:
+	string Now()
+	{
+		
+	}
+};
