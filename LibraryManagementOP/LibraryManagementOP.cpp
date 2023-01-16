@@ -1744,6 +1744,7 @@ void Authenticate()
 	menu.Title = "Do you have a Subscription?";
 	menu.Items.emplace_back("1. Yes");
 	menu.Items.emplace_back("2. No");
+	menu.Items.emplace_back("0. Exit");
 	ShowMenu(menu);
 	int key;
 	string k;
@@ -1767,7 +1768,8 @@ void Authenticate()
 	case 2:
 		SignUp();
 		break;
-
+	case 0:
+		break;
 	default:
 		ShowError("Invalid Input!!");
 		Authenticate();
