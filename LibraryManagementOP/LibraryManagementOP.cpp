@@ -21,7 +21,7 @@ struct MenuInput
 
 string GetPassword();
 void ClearConsole();
-void print(string n);
+void print(string n, bool t = true);
 void ShowMenu(MenuInput menu);
 void ShowUsersList(vector<User> users);
 void ShowError(string message);
@@ -117,9 +117,13 @@ void ClearConsole()
 	system("cls");
 }
 
-void print(string n)
+void print(string n, bool t)
 {
-	cout << "\t" << n;
+	if (t)
+	{
+		cout << "\t";
+	}
+	cout << n;
 }
 
 void ShowMenu(MenuInput menu)
@@ -507,7 +511,7 @@ void ShowCommentsForMember(int BookId, int page)
 
 	comments = commentServices.GetCommentsPaged(comments, 10, page);
 	ShowCommentsList(comments);
-	cout << "1. Previous Page | 2. Next Page | 3. Add a Comment | 8. Back\n";
+	print("1. Previous Page | 2. Next Page | 3. Add a Comment | 8. Back\n", false);
 
 	int key;
 	string k;
@@ -681,11 +685,11 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page, bool B
 	ShowBooksList(books);
 	if (ByGenre)
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Date | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Date | 8. Back\n", false);
 	}
 	else
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Genre | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Genre | 8. Back\n", false);
 	}
 
 	int key;
@@ -838,11 +842,11 @@ void ShowBooksForMembers(int page, bool ByGenre)
 	ShowBooksList(books);
 	if (ByGenre)
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Date | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Date | 8. Back\n", false);
 	}
 	else
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Genre | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Genre | 8. Back\n", false);
 	}
 
 	int key;
@@ -953,7 +957,7 @@ void ShowBorrowedBooksForMembers(int page)
 
 	books = bookServices.GetBooksPaged(books, 10, page);
 	ShowBooksList(books);
-	cout << "1. Previous Page | 2. Next Page | 3.Give Back Book | 8. Back\n";
+	print("1. Previous Page | 2. Next Page | 3.Give Back Book | 8. Back\n", false);
 
 	int key;
 	string k;
@@ -1077,11 +1081,11 @@ void ShowBooksForManagers(int page, bool FilterBorrowed)
 	ShowBooksList(books, true);
 	if (FilterBorrowed)
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Remove Filter | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Remove Filter | 8. Back\n", false);
 	}
 	else
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Filter Borrowed Books | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Filter Borrowed Books | 8. Back\n", false);
 	}
 
 	int key;
@@ -1353,7 +1357,7 @@ void ShowCommentsForManager(int bookId, int page)
 
 	comments = commentServices.GetCommentsPaged(comments, 10, page);
 	ShowCommentsList(comments, true);
-	cout << "1. Previous Page | 2. Next Page | 3. Delete a Comment | 8. Back\n";
+	print("1. Previous Page | 2. Next Page | 3. Delete a Comment | 8. Back\n", false);
 
 	int key;
 	string k;
@@ -1544,11 +1548,11 @@ void ShowUsersForManagers(int page, bool FilterBorrowed)
 	ShowUsersList(users);
 	if (FilterBorrowed)
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select User | 4. Remove Filter | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select User | 4. Remove Filter | 8. Back\n", false);
 	}
 	else
 	{
-		cout << "1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 8. Back\n";
+		print("1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 8. Back\n", false);
 	}
 	int key;
 	string k;
