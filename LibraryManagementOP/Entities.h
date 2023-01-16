@@ -1202,6 +1202,72 @@ class DateTools//Format "Y/M/D 00:00"
 public:
 	string Now()
 	{
-		
+		time_t now = time(0);
+		char str[26];
+		ctime_s(str, 26, &now);
+		string t = str;
+		string year = t.substr(20, 4);
+		string hour = t.substr(11, 5);
+		string day = t.substr(8, 2);
+		string month = t.substr(4, 3);
+
+		switch (month[0])
+		{
+		case 'J':
+			if (month[1] == 'u')
+			{
+				if (month[2] == 'l')
+				{
+					month = "07";
+				}
+				else
+				{
+					month = "06";
+				}
+			}
+			else
+			{
+				month = "01";
+			}
+			break;
+		case 'F':
+			month = "02";
+			break;
+		case 'M':
+			if (month[2] == 'y')
+			{
+				month = "05";
+			}
+			else
+			{
+				month = "03";
+			}
+			break;
+		case 'A':
+			if (month[1] == 'p')
+			{
+				month = "04";
+			}
+			else
+			{
+				month = "08";
+			}
+			break;
+		case 'S':
+			month = "09";
+			break;
+		case 'O':
+			month = "10";
+			break;
+		case 'N':
+			month = "11";
+			break;
+		case 'D':
+			month = "12";
+			break;
+		}
+
+		return (year + "/" + month + "/" + day + " " + hour);
 	}
+
 };

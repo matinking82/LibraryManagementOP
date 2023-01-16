@@ -104,7 +104,6 @@ string _get_k()
 	return kk;
 }
 
-
 bool IsNumber(string s)
 {
 	int len = s.length();
@@ -1055,6 +1054,7 @@ void AddBookByManager()
 	book.Name = name;
 	book.Author = author;
 	book.Genre = genre;
+	book.AddDate = dateTools.Now();
 
 	bookServices.Add(book);
 	ShowError("Book Added Successfully");
@@ -1660,7 +1660,7 @@ void AddManager()
 	cin.getline(fl, 100);
 	cin.getline(fl, 100);
 	user.FullName = fl;
-
+	user.SignDate = dateTools.Now();
 	if (userSevices.IsExist(user.Username))
 	{
 		ShowError("This Username is taken!!");
@@ -1734,7 +1734,7 @@ void SignUp()
 	user.Username = Username;
 	user.Password = Password;
 	user.FullName = FullName;
-	user.SignDate = "-------";
+	user.SignDate = dateTools.Now();
 	user.IsManager = false;
 
 	userSevices.Add(user);
