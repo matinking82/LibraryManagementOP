@@ -495,6 +495,7 @@ void BorrowBook(int BookId)
 	cart.BookId = BookId;
 	cart.UserId = AuthUser.Id;
 	cart.IsGivenBack = false;
+	cart.StartDate = dateTools.Now();
 	bookCartServices.Add(cart);
 	Book book = bookServices.Find(BookId);
 	book.IsAvailable = false;
