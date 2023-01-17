@@ -9,6 +9,9 @@ UserServices userSevices("Data/Users.txt");
 BookServices bookServices("Data/Books.txt");
 BookCartServices bookCartServices("Data/BookCarts.txt");
 CommentServices commentServices("Data/Comments.txt");
+TransacionServices transacionServices("Transactions.txt");
+PenaltyServices penaltyServices("Penalties.txt");
+
 DateTools dateTools;
 
 bool IsAuthenticated = false;
@@ -21,7 +24,6 @@ struct MenuInput
 };
 
 string GetPassword();
-string _get_k();
 void ClearConsole();
 void print(string n, bool t = true);
 void ShowMenu(MenuInput menu);
@@ -1691,7 +1693,7 @@ void AddManager()
 		ManagerMenu();
 		return;
 	}
-
+	user.Id = userSevices.LastId() + 1;
 	userSevices.Add(user);
 	ShowError("Manager Added Successfully!!");
 	ManagerMenu();
@@ -1760,6 +1762,7 @@ void SignUp()
 	user.FullName = FullName;
 	user.SignDate = dateTools.Now();
 	user.IsManager = false;
+	user.Id = userSevices.LastId() + 1;
 
 	userSevices.Add(user);
 

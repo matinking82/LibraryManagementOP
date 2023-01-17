@@ -42,6 +42,24 @@ struct BookCart
 	bool IsGivenBack;
 };
 
+struct Transaction
+{
+	int UserId;
+	int Amount;
+	bool InCome;
+	string Date;
+};
+
+struct Penalty
+{
+	int Id;
+	int UserId;
+	int BookId;
+	int Amount;
+	bool IsPayed;
+	string PayDate;
+};
+
 class UserServices
 {
 	string path;
@@ -142,8 +160,6 @@ public:
 
 	void Add(User user)
 	{
-		static int id = LastId() + 1;
-		user.Id = id;
 		ofstream writer(path, ios::app);
 
 		writer << user.Id << endl;
@@ -154,8 +170,6 @@ public:
 		writer << user.IsManager << endl;
 
 		writer.close();
-
-		id++;
 	}
 
 	void Update(User user)
@@ -1087,7 +1101,7 @@ public:
 		}
 		reader.close();
 
-		
+
 		return result;
 	}
 
@@ -1245,6 +1259,228 @@ public:
 		writer << bookCart.StartDate << endl;
 		writer << bookCart.EndDate << endl;
 		writer << bookCart.IsGivenBack << endl;
+
+		writer.close();
+	}
+};
+
+class TransacionServices
+{
+	string path;
+public:
+
+	TransacionServices(string DbPath)
+	{
+		path = DbPath;
+	}
+
+	vector<Transaction> AllTransactions()
+	{
+		ifstream reader(path);
+		string line;
+		vector<Transaction> result;
+		int step = 0;
+		Transaction tra;
+		while (getline(reader, line))
+		{
+			switch (step)
+			{
+
+			case 0:
+				tra.UserId = stoi(line);
+				break;
+
+			case 1:
+				tra.Amount = stoi(line);
+				break;
+
+			case 2:
+				tra.InCome = stoi(line);
+				break;
+
+			case 3:
+				tra.Date = line;
+				break;
+			default:
+				break;
+			}
+
+			step++;
+			if (step == 4)
+			{
+				result.emplace_back(tra);
+				step = 0;
+			}
+		}
+		reader.close();
+
+		return result;
+	}
+
+	void Add(Transaction transaction)
+	{
+		ofstream writer(path, ios::app);
+
+		writer << transaction.UserId << endl;
+		writer << transaction.Amount << endl;
+		writer << transaction.InCome << endl;
+		writer << transaction.Date << endl;
+
+		writer.close();
+	}
+
+	int GetBalanceForUser(int UserId)
+	{
+		vector<Transaction> transactions = AllTransactions();
+		int Result = 0;
+		for (Transaction transaction : transactions)
+		{
+			if (transaction.UserId == UserId)
+			{
+				if (transaction.InCome)
+				{
+					Result -= transaction.Amount;
+				}
+				else
+				{
+					Result += transaction.Amount;
+				}
+			}
+		}
+
+		return Result;
+	}
+
+	vector<Transaction> GetTransactionsForUser(int UserId)
+	{
+		vector<Transaction> transactions = AllTransactions();
+		vector<Transaction> Result;
+		for (Transaction transaction : transactions)
+		{
+			if (transaction.UserId == UserId)
+			{
+				Result.emplace_back(transaction);
+			}
+		}
+
+		return Result;
+	}
+};
+
+class PenaltyServices
+{
+	string path;
+public:
+	PenaltyServices(string DbPath)
+	{
+		path = DbPath;
+	}
+
+	vector<Penalty> AllPenalties()
+	{
+		ifstream reader(path);
+		string line;
+		vector<Penalty> result;
+		int step = 0;
+		Penalty penalty;
+		while (getline(reader, line))
+		{
+			switch (step)
+			{
+
+			case 0:
+				penalty.UserId = stoi(line);
+				break;
+			case 1:
+				penalty.UserId = stoi(line);
+				break;
+
+			case 2:
+				penalty.UserId = stoi(line);
+				break;
+
+			case 3:
+				penalty.Amount = stoi(line);
+				break;
+
+			case 4:
+				penalty.IsPayed = stoi(line);
+				break;
+
+			case 5:
+				penalty.PayDate = line;
+				break;
+			default:
+				break;
+			}
+
+			step++;
+			if (step == 6)
+			{
+				result.emplace_back(penalty);
+				step = 0;
+			}
+		}
+		reader.close();
+
+		return result;
+	}
+
+	int GetDebtForUser(int UserId)
+	{
+		vector<Penalty> penalties = AllPenalties();
+		int debt = 0;
+		for (Penalty penalty : penalties)
+		{
+			if (penalty.UserId == UserId && !penalty.IsPayed)
+			{
+				debt += penalty.Amount;
+			}
+		}
+		return debt;
+	}
+
+	vector<Penalty> GetAllPenaltiesForUser(int UserId)
+	{
+		vector<Penalty> penalties = AllPenalties();
+		vector<Penalty> result;
+		for (Penalty penalty : penalties)
+		{
+			if (penalty.UserId == UserId)
+			{
+				result.emplace_back(penalty);
+			}
+		}
+		return result;
+	}
+
+	void Update(Penalty p)
+	{
+		ofstream writer(path);
+		writer.close();
+
+		vector<Penalty> penalties = AllPenalties();
+		for (Penalty penalty : penalties)
+		{
+			if (penalty.Id == p.Id)
+			{
+				penalty = p;
+			}
+
+			Add(penalty);
+		}
+	}
+
+	void Add(Penalty penalty)
+	{
+		ofstream writer(path, ios::app);
+
+		writer << penalty.Id << endl;
+		writer << penalty.UserId << endl;
+		writer << penalty.BookId << endl;
+		writer << penalty.Amount << endl;
+		writer << penalty.IsPayed << endl;
+		writer << penalty.PayDate << endl;
 
 		writer.close();
 	}
