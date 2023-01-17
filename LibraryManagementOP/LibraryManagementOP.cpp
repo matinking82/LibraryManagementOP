@@ -97,13 +97,6 @@ string GetPassword()
 	return pass;
 }
 
-string _get_k()
-{
-	char kk[100];
-	cin.getline(kk, 100);
-	return kk;
-}
-
 bool IsNumber(string s)
 {
 	int len = s.length();
@@ -242,7 +235,7 @@ void MainMenu()
 	ShowMenu(menu);
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -302,7 +295,7 @@ void ManagerMenu()
 	ShowMenu(menu);
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -373,7 +366,7 @@ void Profile()
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -423,7 +416,7 @@ void EditProfile()
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -524,7 +517,7 @@ void ShowCommentsForMember(int BookId, int page)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -633,7 +626,7 @@ void SelectBookByMember(int BookId)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -703,7 +696,7 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page, bool B
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -781,7 +774,7 @@ void SearchBookForMember()
 	ShowMenu(menu);
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -860,7 +853,7 @@ void ShowBooksForMembers(int page, bool ByGenre)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -943,7 +936,13 @@ void GiveBackBook(int BookId)
 	book.IsAvailable = true;
 	bookServices.Update(book);
 
-	bookCartServices.Remove(BookId);
+	//bookCartServices.Remove(BookId);
+
+	cart.EndDate = dateTools.Now();
+	cart.IsGivenBack = true;
+
+	bookCartServices.Update(cart);
+
 	ShowError("The Book Given back Successfully!!");
 	ShowBorrowedBooksForMembers();
 }
@@ -970,7 +969,7 @@ void ShowBorrowedBooksForMembers(int page)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1099,7 +1098,8 @@ void ShowBooksForManagers(int page, bool FilterBorrowed)
 	}
 
 	int key;
-	string k = _get_k();
+	string k;
+	cin >> k;
 
 
 	if (!IsNumber(k))
@@ -1225,7 +1225,7 @@ void SelectUserByManager(int UserId)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1296,7 +1296,7 @@ void EditBookByManager(int BookId)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1372,7 +1372,7 @@ void ShowCommentsForManager(int bookId, int page)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1487,7 +1487,7 @@ void SelectBookByManager(int BookId)
 
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1567,7 +1567,7 @@ void ShowUsersForManagers(int page, bool FilterBorrowed)
 	}
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1763,7 +1763,7 @@ void Authenticate()
 	ShowMenu(menu);
 	int key;
 	string k;
-	k = _get_k();
+	cin >> k;
 
 	if (!IsNumber(k))
 	{

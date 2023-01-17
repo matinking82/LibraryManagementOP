@@ -1096,6 +1096,10 @@ public:
 		vector<BookCart> carts = AllBookCarts();
 		for (BookCart cart : carts)
 		{
+			if (cart.IsGivenBack)
+			{
+				continue;
+			}
 			if (cart.UserId == userId && !cart.IsGivenBack)
 			{
 				count++;
@@ -1110,12 +1114,33 @@ public:
 		vector<BookCart> result;
 		for (BookCart cart : carts)
 		{
+			if (cart.IsGivenBack)
+			{
+				continue;
+			}
 			if (cart.UserId == userId)
 			{
 				result.emplace_back(cart);
 			}
 		}
 		return result;
+	}
+
+	void Update(BookCart bookCart)
+	{
+		vector<BookCart> carts = AllBookCarts();
+
+		ofstream writer(path);
+		writer.close();
+
+		for (BookCart cart : carts)
+		{
+			if (cart.BookId == bookCart.BookId && cart.StartDate == bookCart.StartDate)
+			{
+				cart = bookCart;
+			}
+			Add(cart);
+		}
 	}
 
 	BookCart Find(int BookId)
@@ -1156,7 +1181,7 @@ public:
 			step++;
 			if (step == 5)
 			{
-				if (cart.BookId == BookId)
+				if (!cart.IsGivenBack && cart.BookId == BookId)
 				{
 					reader.close();
 					return cart;
