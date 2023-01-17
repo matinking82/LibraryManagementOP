@@ -1264,12 +1264,12 @@ public:
 	}
 };
 
-class TransacionServices
+class TransactionServices
 {
 	string path;
 public:
 
-	TransacionServices(string DbPath)
+	TransactionServices(string DbPath)
 	{
 		path = DbPath;
 	}
@@ -1339,15 +1339,28 @@ public:
 			{
 				if (transaction.InCome)
 				{
-					Result -= transaction.Amount;
+					Result += transaction.Amount;
 				}
 				else
 				{
-					Result += transaction.Amount;
+					Result -= transaction.Amount;
 				}
 			}
 		}
 
+		return Result;
+	}
+
+	vector<Transaction> GetPaged(vector<Transaction> transactions, int count, int page)
+	{
+		vector<Transaction> Result;
+		int start = 0;
+		start += (count * (page - 1));
+		for (; start < transactions.size() && count > 0; start++)
+		{
+			Result.emplace_back(transactions[start]);
+			count--;
+		}
 		return Result;
 	}
 
@@ -1376,6 +1389,19 @@ public:
 		path = DbPath;
 	}
 
+	void PayAllDebtsForUser(int UserId)
+	{
+		vector<Penalty> penalties = AllPenalties();
+		for (Penalty penalty : penalties)
+		{
+			if (!penalty.IsPayed)
+			{
+				penalty.IsPayed = true;
+				Update(penalty);
+			}
+		}
+	}
+
 	vector<Penalty> AllPenalties()
 	{
 		ifstream reader(path);
@@ -1389,14 +1415,14 @@ public:
 			{
 
 			case 0:
-				penalty.UserId = stoi(line);
+				penalty.Id = stoi(line);
 				break;
 			case 1:
 				penalty.UserId = stoi(line);
 				break;
 
 			case 2:
-				penalty.UserId = stoi(line);
+				penalty.BookId = stoi(line);
 				break;
 
 			case 3:
@@ -1438,6 +1464,19 @@ public:
 			}
 		}
 		return debt;
+	}
+
+	vector<Penalty> GetPaged(vector<Penalty> penalties, int count, int page)
+	{
+		vector<Penalty> Result;
+		int start = 0;
+		start += (count * (page - 1));
+		for (; start < penalties.size() && count > 0; start++)
+		{
+			Result.emplace_back(penalties[start]);
+			count--;
+		}
+		return Result;
 	}
 
 	vector<Penalty> GetAllPenaltiesForUser(int UserId)
@@ -1484,9 +1523,23 @@ public:
 
 		writer.close();
 	}
+
+	int LastId()
+	{
+		int last = 0;
+		vector<Penalty>	penalties = AllPenalties();
+		for (Penalty penalty : penalties)
+		{
+			if (penalty.Id > last)
+			{
+				last = penalty.Id;
+			}
+		}
+		return last;
+	}
 };
 
-class DateTools//Format "Y/M/D 00:00"
+class DateTools//Format "YYYY/MM/DD 00:00"
 {
 public:
 	string Now()
@@ -1559,4 +1612,24 @@ public:
 		return (year + "/" + month + "/" + day + " " + hour);
 	}
 
+	int DaysPassed(string start, string end)
+	{
+		int year = stoi(end.substr(0, 4)) - stoi(start.substr(0, 4));
+		int month = stoi(end.substr(5, 2)) - stoi(start.substr(5, 2));
+		int day = stoi(end.substr(8, 2)) - stoi(start.substr(8, 2));
+
+		if (day < 0)
+		{
+			day = 30 + day;
+			month--;
+		}
+
+		if (month < 0)
+		{
+			month = 12 + month;
+			year--;
+		}
+
+		return (year * 365 + month * 30 + day);
+	}
 };

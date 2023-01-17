@@ -9,8 +9,8 @@ UserServices userSevices("Data/Users.txt");
 BookServices bookServices("Data/Books.txt");
 BookCartServices bookCartServices("Data/BookCarts.txt");
 CommentServices commentServices("Data/Comments.txt");
-TransacionServices transacionServices("Transactions.txt");
-PenaltyServices penaltyServices("Penalties.txt");
+TransactionServices transactionServices("Data/Transactions.txt");
+PenaltyServices penaltyServices("Data/Penalties.txt");
 
 DateTools dateTools;
 
@@ -53,9 +53,15 @@ void Authenticate();
 void SearchBookForMember();
 void Start();
 bool IsNumber(string s);
+void ShowTransactionsList(vector<Transaction> transactions);
 void ShowBooksList(vector<Book> books, bool BorrowedBy = false);
 void ShowBookCartsList(vector<BookCart> carts);
 void EditProfile();
+void PayDebt();
+void ChargeAccountForMember();
+void PaymentMenu();
+void ShowTransactionsForUser(int page = 1);
+void ShowPenaltiesForUser(int page = 1);
 
 int main()
 {
@@ -215,6 +221,44 @@ void ShowBooksList(vector<Book> books, bool BorrowedBy)
 	}
 }
 
+void ShowTransactionsList(vector<Transaction> transactions)
+{
+	for (Transaction transaction : transactions)
+	{
+		if (transaction.InCome)
+		{
+			print("+ Income:\n");
+		}
+		else
+		{
+			print("- Payed:\n");
+		}
+		print("Amount: " + to_string(transaction.Amount) + "000 Tomans\n");
+		print("Date: " + transaction.Date + "\n");
+		cout << "-------------------------------------------------\n";
+	}
+}
+
+void ShowPenaltiesList(vector<Penalty> penalties)
+{
+	for (Penalty penalty : penalties)
+	{
+		Book book = bookServices.Find(penalty.BookId);
+		print("Penalty For Book :'" + book.Name + "'\n");
+		print("Amount: " + to_string(penalty.Amount) + "000 Tomans\n");
+		if (penalty.IsPayed)
+		{
+			print("Status: Payed\n");
+			print("Pay Date: " + penalty.PayDate + "\n");
+		}
+		else
+		{
+			print("Status: Not Payed\n");
+		}
+		cout << "-------------------------------------------------\n";
+	}
+}
+
 void ShowCommentsList(vector<Comment> comments, bool showId = false)
 {
 	for (Comment comment : comments)
@@ -241,6 +285,256 @@ void ShowError(string message)
 	this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
+void PayDebt()
+{
+	int balance = transactionServices.GetBalanceForUser(AuthUser.Id);
+	int debt = penaltyServices.GetDebtForUser(AuthUser.Id);
+
+	if (debt == 0)
+	{
+		ShowError("You Don't Have a Debt To Pay!!");
+		PaymentMenu();
+		return;
+	}
+
+	if (balance >= debt)
+	{
+		Transaction tr;
+		tr.Amount = debt;
+		tr.Date = dateTools.Now();
+		tr.InCome = false;
+		tr.UserId = AuthUser.Id;
+
+		transactionServices.Add(tr);
+
+		penaltyServices.PayAllDebtsForUser(AuthUser.Id);
+
+		ShowError("Debt Payed Successfully!!");
+		PaymentMenu();
+	}
+	else
+	{
+		ShowError("You don't have enough money. Please charge your account!!");
+		PaymentMenu();
+	}
+}
+
+void ChargeAccountForMember()
+{
+	print("how much Do You Want To charge?\n", false);
+	print("1.10000 Tomans\n");
+	print("2.25000 Tomans\n");
+	print("3.50000 Tomans\n");
+	print("4.100000 Tomans\n");
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		PaymentMenu();
+		return;
+	}
+
+	Transaction transaction;
+	transaction.Date = dateTools.Now();
+	transaction.InCome = true;
+	transaction.UserId = AuthUser.Id;
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		transaction.Amount = 10;
+		break;
+
+	case 2:
+		transaction.Amount = 25;
+
+		break;
+
+	case 3:
+		transaction.Amount = 50;
+
+		break;
+
+	case 4:
+		transaction.Amount = 100;
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		PaymentMenu();
+		break;
+	}
+
+	transactionServices.Add(transaction);
+	ShowError("Account Charged Successfully!!");
+	PaymentMenu();
+}
+
+void ShowTransactionsForUser(int page)
+{
+	ClearConsole();
+	vector<Transaction> transactions = transactionServices.GetTransactionsForUser(AuthUser.Id);
+	transactions = transactionServices.GetPaged(transactions, 10, page);
+	MenuInput menu;
+	menu.Title = "My Transactions | Page " + to_string(page);
+	ShowMenu(menu);
+	ShowTransactionsList(transactions);
+	print("1. Previous Page | 2. Next Page | 8. Back\n", false);
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowTransactionsForUser(page);
+		return;
+	}
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowTransactionsForUser(page);
+
+		break;
+
+	case 2:
+		page++;
+		ShowTransactionsForUser(page);
+		break;
+
+	case 8:
+		PaymentMenu();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowTransactionsForUser(page);
+		break;
+	}
+}
+
+void ShowPenaltiesForUser(int page)
+{
+	vector<Penalty> penalties = penaltyServices.GetAllPenaltiesForUser(AuthUser.Id);
+	penalties = penaltyServices.GetPaged(penalties, 10, page);
+	MenuInput menu;
+	menu.Title = "My Penalties | Page " + to_string(page);
+	ShowMenu(menu);
+	ShowPenaltiesList(penalties);
+	print("1. Previous Page | 2. Next Page | 8. Back\n", false);
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowPenaltiesForUser(page);
+		return;
+	}
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowPenaltiesForUser(page);
+
+		break;
+
+	case 2:
+		page++;
+		ShowPenaltiesForUser(page);
+		break;
+
+	case 8:
+		PaymentMenu();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowPenaltiesForUser(page);
+		break;
+	}
+}
+
+void PaymentMenu()
+{
+	MenuInput menu;
+
+	menu.Title = "Payment";
+	int Balance = transactionServices.GetBalanceForUser(AuthUser.Id);
+	menu.Items.emplace_back("Your Balance :" + to_string(Balance) + "000 Tomans");
+	menu.Items.emplace_back("Penalty:");
+	int debt = penaltyServices.GetDebtForUser(AuthUser.Id);
+	menu.Items.emplace_back("\tYou Have to Pay " + to_string(debt) + "000 Tomans");
+	menu.Items.emplace_back("---------------------------------------");
+	menu.Items.emplace_back("1. Pay My Debt");
+	menu.Items.emplace_back("2. Charge My Account");
+	menu.Items.emplace_back("3. My Transactions");
+	menu.Items.emplace_back("4. My Penalties");
+	menu.Items.emplace_back("8. Back");
+
+	ShowMenu(menu);
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		PaymentMenu();
+		return;
+	}
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		PayDebt();
+		break;
+
+	case 2:
+		ChargeAccountForMember();
+		break;
+
+	case 3:
+		ShowTransactionsForUser();
+		break;
+
+	case 4:
+		ShowPenaltiesForUser();
+		break;
+
+	case 8:
+		MainMenu();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		PaymentMenu();
+		break;
+	}
+}
+
 void MainMenu()
 {
 	ClearConsole();
@@ -254,9 +548,10 @@ void MainMenu()
 	menu.Items.emplace_back("1. Books");
 	menu.Items.emplace_back("2. My Books");
 	menu.Items.emplace_back("3. Profile");
+	menu.Items.emplace_back("4. Payment");
 	if (AuthUser.IsManager)
 	{
-		menu.Items.emplace_back("4. Manager Panel");
+		menu.Items.emplace_back("5. Manager Panel");
 	}
 	menu.Items.emplace_back("0. SignOut");
 	ShowMenu(menu);
@@ -291,6 +586,10 @@ void MainMenu()
 		break;
 
 	case 4:
+		PaymentMenu();
+		break;
+
+	case 5:
 		if (AuthUser.IsManager)
 		{
 			ManagerMenu();
@@ -356,7 +655,7 @@ void ManagerMenu()
 
 	default:
 		ShowError("Invalid Input!!");
-		MainMenu();
+		ManagerMenu();
 		break;
 	}
 }
@@ -970,6 +1269,22 @@ void GiveBackBook(int BookId)
 	cart.IsGivenBack = true;
 
 	bookCartServices.Update(cart);
+
+	int daysPassed = dateTools.DaysPassed(cart.StartDate, cart.EndDate);
+
+	if (daysPassed > 14)
+	{
+		int penaltyDays = daysPassed - 14;
+		Penalty penalty;
+		penalty.BookId = BookId;
+		penalty.UserId = AuthUser.Id;
+		penalty.Amount = penaltyDays * 20;
+		penalty.IsPayed = false;
+		penalty.Id = penaltyServices.LastId() + 1;
+
+		penaltyServices.Add(penalty);
+		ShowError("You Didn't Return The Book in 14 Days And You have To pay " + to_string(penalty.Amount) + "000 Tomans");
+	}
 
 	ShowError("The Book Returned Successfully!!");
 	ShowBorrowedBooksForMembers();
