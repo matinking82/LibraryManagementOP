@@ -52,6 +52,7 @@ void SearchBookForMember();
 void Start();
 bool IsNumber(string s);
 void ShowBooksList(vector<Book> books, bool BorrowedBy = false);
+void ShowBookCartsList(vector<BookCart> carts);
 void EditProfile();
 
 int main()
@@ -156,6 +157,30 @@ void ShowUsersList(vector<User> users)
 		else
 		{
 			print("Role: Member\n");
+		}
+		cout << "-------------------------------------------------\n";
+	}
+}
+
+void ShowBookCartsList(vector<BookCart> carts)
+{
+	for (BookCart cart : carts)
+	{
+		Book book = bookServices.Find(cart.BookId);
+
+
+		print("Id: " + to_string(book.Id) + "\n");
+		print("Name: " + book.Name + "\n");
+		print("Author: " + book.Author + "\n");
+		print("Borrowed Date: " + cart.StartDate + "\n");
+		if (cart.IsGivenBack)
+		{
+			print("Status: Returned\n");
+			print("Return Date: " + cart.EndDate + "\n");
+		}
+		else
+		{
+			print("Status: Not Returned\n");
 		}
 		cout << "-------------------------------------------------\n";
 	}
@@ -944,7 +969,7 @@ void GiveBackBook(int BookId)
 
 	bookCartServices.Update(cart);
 
-	ShowError("The Book Given back Successfully!!");
+	ShowError("The Book Returned Successfully!!");
 	ShowBorrowedBooksForMembers();
 }
 
@@ -955,18 +980,12 @@ void ShowBorrowedBooksForMembers(int page)
 	menu.Title = "My Borrowed Books";
 	ShowMenu(menu);
 
-	vector<Book> books;
-	{
-		vector<BookCart> CartsUser = bookCartServices.GetAllCartsForUser(AuthUser.Id);
-		for (BookCart cart : CartsUser)
-		{
-			books.emplace_back(bookServices.Find(cart.BookId));
-		}
-	}
+	vector<BookCart> CartsUser = bookCartServices.GetAllCartsForUser(AuthUser.Id, true);
 
-	books = bookServices.GetBooksPaged(books, 10, page);
-	ShowBooksList(books);
-	print("1. Previous Page | 2. Next Page | 3.Give Back Book | 8. Back\n", false);
+	CartsUser = bookCartServices.GetPaged(CartsUser, 10, page);
+
+	ShowBookCartsList(CartsUser);
+	print("1. Previous Page | 2. Next Page | 3.Return Book | 8. Back\n", false);
 
 	int key;
 	string k;
@@ -1205,6 +1224,10 @@ void SelectUserByManager(int UserId)
 		int i = 1;
 		for (BookCart cart : carts)
 		{
+			if (cart.IsGivenBack)
+			{
+				continue;
+			}
 			Book book = bookServices.Find(cart.BookId);
 			menu.Items.emplace_back(to_string(i) + ". Name: " + book.Name + " | Author: " + book.Author + " | Id: " + to_string(book.Id) + "\n");
 			i++;
@@ -1319,7 +1342,7 @@ void EditBookByManager(int BookId)
 		book.Name = newName;
 		bookServices.Update(book);
 		ShowError("Name Changed Successfully!!");
-		EditBookByManager(BookId);
+		SelectBookByManager(BookId);
 		break;
 
 	case 2:
@@ -1331,7 +1354,7 @@ void EditBookByManager(int BookId)
 		bookServices.Update(book);
 
 		ShowError("Author Changed Successfully!!");
-		EditBookByManager(BookId);
+		SelectBookByManager(BookId);
 		break;
 
 	case 3:
@@ -1344,7 +1367,7 @@ void EditBookByManager(int BookId)
 		bookServices.Update(book);
 
 		ShowError("Genre Changed Successfully!!");
-		EditBookByManager(BookId);
+		SelectBookByManager(BookId);
 		break;
 
 	case 8:

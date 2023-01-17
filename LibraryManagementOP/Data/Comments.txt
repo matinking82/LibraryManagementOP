@@ -23,11 +23,6 @@ i like it
 i recommend it
 1
 11
-6
-1
-bad
-1
-11
 8
 5
 hmmm
@@ -38,3 +33,8 @@ hmmm
 good
 1
 19
+10
+4
+great
+1
+12

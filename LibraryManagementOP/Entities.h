@@ -498,7 +498,7 @@ public:
 		{
 			IsContinue = false;
 
-			for (int i = 0; i < books.size() - 1; i++)
+			for (int i = 0; i + 1 < books.size(); i++)
 			{
 				if (books[i].Genre.compare(books[i + 1].Genre) > 0)
 				{
@@ -1086,8 +1086,9 @@ public:
 			}
 		}
 		reader.close();
-		return result;
 
+		
+		return result;
 	}
 
 	int GetBorrowingCountForUser(int userId)
@@ -1108,21 +1109,35 @@ public:
 		return count;
 	}
 
-	vector<BookCart> GetAllCartsForUser(int userId)
+	vector<BookCart> GetAllCartsForUser(int userId, bool reverse = false)
 	{
 		vector<BookCart> carts = AllBookCarts();
 		vector<BookCart> result;
 		for (BookCart cart : carts)
 		{
-			if (cart.IsGivenBack)
+			/*if (cart.IsGivenBack)
 			{
 				continue;
-			}
+			}*/
 			if (cart.UserId == userId)
 			{
 				result.emplace_back(cart);
 			}
 		}
+
+		if (reverse)
+		{
+			vector<BookCart> temp;
+
+			for (int i = result.size(); i >= 1; i--)
+			{
+				temp.emplace_back(result[i - 1]);
+			}
+
+			result = temp;
+
+		}
+
 		return result;
 	}
 
@@ -1141,6 +1156,19 @@ public:
 			}
 			Add(cart);
 		}
+	}
+
+	vector<	BookCart> GetPaged(vector<BookCart> carts, int count, int page)
+	{
+		vector<BookCart> Result;
+		int start = 0;
+		start += (count * (page - 1));
+		for (; start < carts.size() && count > 0; start++)
+		{
+			Result.emplace_back(carts[start]);
+			count--;
+		}
+		return Result;
 	}
 
 	BookCart Find(int BookId)
