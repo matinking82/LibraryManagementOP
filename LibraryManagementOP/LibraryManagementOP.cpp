@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include "Entities.h"
+#include <windows.h>
 #include <conio.h>
 
 UserServices userSevices("Data/Users.txt");
@@ -25,7 +26,7 @@ struct MenuInput
 
 string GetPassword();
 void ClearConsole();
-void print(string n, bool t = true);
+void print(string n, bool end = true);
 void ShowMenu(MenuInput menu);
 void ShowUsersList(vector<User> users);
 void ShowError(string message);
@@ -64,6 +65,8 @@ void PaymentMenu();
 void ShowTransactionsForUser(int page = 1);
 void ShowAllTransactionsForManager(int page = 1);
 void ShowPenaltiesForUser(int page = 1);
+void printBorderLine();
+void printBorder(bool d = false);
 
 int main()
 {
@@ -125,50 +128,125 @@ bool IsNumber(string s)
 	return true;
 }
 
+void ResetColors()
+{
+	HANDLE cout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(cout_handle, 100 | BACKGROUND_INTENSITY + 49);
+}
+
+void BorderColor()
+{
+	HANDLE cout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(cout_handle, BACKGROUND_RED + 100 | BACKGROUND_INTENSITY + 49);
+}
+
 void ClearConsole()
 {
+	ResetColors();
 	system("cls");
 }
 
-void print(string n, bool t)
+void print(string n, bool end)
 {
-	if (t)
-	{
-		cout << "\t";
-	}
+	printBorder();
 	cout << n;
+	if (end)
+	{
+		for (int i = 0; i < 116 - n.length(); i++)
+		{
+			cout << " ";
+		}
+		printBorder();
+		cout << "\n";
+	}
+}
+
+void printBorderLine()
+{
+	BorderColor();
+	cout << "************************************************************************************************************************\n";
+	ResetColors();
+}
+
+void printBorder(bool d)
+{
+	BorderColor();
+	cout << "**";
+	ResetColors();
+	if (d)
+	{
+		cout << "                                                                                                                    ";
+		BorderColor();
+		cout << "**";
+		ResetColors();
+		cout << "\n";
+	}
 }
 
 void ShowMenu(MenuInput menu)
 {
 	ClearConsole();
-	cout << menu.Title << "\n\n";
+	printBorderLine();
+	printBorder();
+	int widthSpace = 116 - menu.Title.length();
+	int left = widthSpace / 2;
+	int right = widthSpace - left;
+	for (int i = 0; i < left; i++)
+	{
+		cout << " ";
+	}
+	cout << menu.Title;
+	for (int i = 0; i < right; i++)
+	{
+		cout << " ";
+	}
+	printBorder();
+	cout << "\n";
+	printBorderLine();
+	printBorder(true);
 
 	for (string item : menu.Items)
 	{
-		cout << "\t" << item << endl;
+		if (item == "<Line>")
+		{
+			printBorderLine();
+		}
+		else
+		{
+			printBorder();
+			cout << "\t" << item;
+			for (int i = 0; i < 110 - item.length(); i++)
+			{
+				cout << " ";
+			}
+			printBorder();
+			cout << "\n";
+		}
 	}
-	cout << endl << endl << endl;
+	printBorder(true);
+	printBorder(true);
+	printBorder(true);
+	printBorder(true);
 }
 
 void ShowUsersList(vector<User> users)
 {
 	for (User user : users)
 	{
-		print("Id: " + to_string(user.Id) + "\n");
-		print("Username: " + user.Username + "\n");
-		print("FullName: " + user.FullName + "\n");
-		print("Register Date: " + user.SignDate + "\n");
-		print("Books Borrowed: " + to_string(bookCartServices.GetBorrowingCountForUser(user.Id)) + "\n");
+		print("Id: " + to_string(user.Id));
+		print("Username: " + user.Username);
+		print("FullName: " + user.FullName);
+		print("Register Date: " + user.SignDate);
+		print("Books Borrowed: " + to_string(bookCartServices.GetBorrowingCountForUser(user.Id)));
 		if (user.IsManager)
 		{
-			print("Role: Manager\n");
+			print("Role: Manager");
 		}
 		else
 		{
-			print("Role: Member\n");
+			print("Role: Member");
 		}
-		cout << "-------------------------------------------------\n";
+		printBorderLine();
 	}
 }
 
@@ -179,20 +257,20 @@ void ShowBookCartsList(vector<BookCart> carts)
 		Book book = bookServices.Find(cart.BookId);
 
 
-		print("Id: " + to_string(book.Id) + "\n");
-		print("Name: " + book.Name + "\n");
-		print("Author: " + book.Author + "\n");
-		print("Borrowed Date: " + cart.StartDate + "\n");
+		print("Id: " + to_string(book.Id));
+		print("Name: " + book.Name);
+		print("Author: " + book.Author);
+		print("Borrowed Date: " + cart.StartDate);
 		if (cart.IsGivenBack)
 		{
-			print("Status: Returned\n");
-			print("Return Date: " + cart.EndDate + "\n");
+			print("Status: Returned");
+			print("Return Date: " + cart.EndDate);
 		}
 		else
 		{
-			print("Status: Not Returned\n");
+			print("Status: Not Returned");
 		}
-		cout << "-------------------------------------------------\n";
+		printBorderLine();
 	}
 }
 
@@ -200,26 +278,26 @@ void ShowBooksList(vector<Book> books, bool BorrowedBy)
 {
 	for (Book book : books)
 	{
-		print("Id: " + to_string(book.Id) + "\n");
-		print("Name: " + book.Name + "\n");
-		print("Author: " + book.Author + "\n");
-		print("Genre: " + book.Genre + "\n");
-		print("Added Date: " + book.AddDate + "\n");
+		print("Id: " + to_string(book.Id));
+		print("Name: " + book.Name);
+		print("Author: " + book.Author);
+		print("Genre: " + book.Genre);
+		print("Added Date: " + book.AddDate);
 		if (book.IsAvailable)
 		{
-			print("Status: Available\n");
+			print("Status: Available");
 		}
 		else
 		{
-			print("Status: Not Available\n");
+			print("Status: Not Available");
 			if (BorrowedBy)
 			{
 				BookCart cart = bookCartServices.Find(book.Id);
 				User user = userSevices.Find(cart.UserId);
-				print("Borrowed By: " + user.Username + "(Id:" + to_string(user.Id) + ")" + "\n");
+				print("Borrowed By: " + user.Username + "(Id:" + to_string(user.Id) + ")");
 			}
 		}
-		cout << "-------------------------------------------------\n";
+		printBorderLine();
 	}
 }
 
@@ -232,24 +310,24 @@ void ShowTransactionsList(vector<Transaction> transactions, bool manager)
 			if (userSevices.IsExist(transaction.UserId))
 			{
 				User user = userSevices.Find(transaction.UserId);
-				print(user.Username + ":\n");
+				print(user.Username + ":");
 			}
 			else
 			{
-				print("Deleted User:\n");
+				print("Deleted User:");
 			}
 		}
 		if (transaction.InCome)
 		{
-			print("+ Charged:\n");
+			print("+ Charged:");
 		}
 		else
 		{
-			print("- Payed:\n");
+			print("- Payed:");
 		}
-		print("Amount: " + to_string(transaction.Amount) + "000 Tomans\n");
-		print("Date: " + transaction.Date + "\n");
-		cout << "-------------------------------------------------\n";
+		print("Amount: " + to_string(transaction.Amount) + "000 Tomans");
+		print("Date: " + transaction.Date);
+		printBorderLine();
 	}
 }
 
@@ -258,18 +336,18 @@ void ShowPenaltiesList(vector<Penalty> penalties)
 	for (Penalty penalty : penalties)
 	{
 		Book book = bookServices.Find(penalty.BookId);
-		print("Penalty For Book :'" + book.Name + "'\n");
-		print("Amount: " + to_string(penalty.Amount) + "000 Tomans\n");
+		print("Penalty For Book :'" + book.Name);
+		print("Amount: " + to_string(penalty.Amount) + "000 Tomans");
 		if (penalty.IsPayed)
 		{
-			print("Status: Payed\n");
-			print("Pay Date: " + penalty.PayDate + "\n");
+			print("Status: Payed");
+			print("Pay Date: " + penalty.PayDate);
 		}
 		else
 		{
-			print("Status: Not Payed\n");
+			print("Status: Not Payed");
 		}
-		cout << "-------------------------------------------------\n";
+		printBorderLine();
 	}
 }
 
@@ -280,15 +358,15 @@ void ShowCommentsList(vector<Comment> comments, bool showId = false)
 		User user = userSevices.Find(comment.UserId);
 		if (showId)
 		{
-			print(user.FullName + " (star: " + to_string(comment.Star) + ") (CommentId: " + to_string(comment.Id) + "):\n");
+			print(user.FullName + " (star: " + to_string(comment.Star) + ") (CommentId: " + to_string(comment.Id) + "):");
 		}
 		else
 		{
-			print(user.FullName + " (star: " + to_string(comment.Star) + ") :\n");
+			print(user.FullName + " (star: " + to_string(comment.Star) + ") :");
 		}
-		print("\t" + comment.Text);
+		print("     " + comment.Text);
 
-		cout << "\n\n-------------------------------------------------\n";
+		printBorderLine();
 	}
 }
 
@@ -335,15 +413,15 @@ void PayDebt()
 
 void ChargeUserAccountByManager(int UserId)
 {
-	print("how much Do You Want To charge?\n", false);
-	print("1.10000 Tomans\n");
-	print("2.25000 Tomans\n");
-	print("3.50000 Tomans\n");
-	print("4.100000 Tomans\n");
+	print("how much Do You Want To charge?");
+	print("1.10000 Tomans");
+	print("2.25000 Tomans");
+	print("3.50000 Tomans");
+	print("4.100000 Tomans");
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -391,15 +469,15 @@ void ChargeUserAccountByManager(int UserId)
 
 void ChargeAccountForMember()
 {
-	print("how much Do You Want To charge?\n", false);
-	print("1.10000 Tomans\n");
-	print("2.25000 Tomans\n");
-	print("3.50000 Tomans\n");
-	print("4.100000 Tomans\n");
+	print("how much Do You Want To charge?");
+	print("1.10000 Tomans");
+	print("2.25000 Tomans");
+	print("3.50000 Tomans");
+	print("4.100000 Tomans");
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -454,11 +532,12 @@ void ShowTransactionsForUser(int page)
 	menu.Title = "My Transactions | Page " + to_string(page);
 	ShowMenu(menu);
 	ShowTransactionsList(transactions);
-	print("1. Previous Page | 2. Next Page | 8. Back\n", false);
+	print("1. Previous Page | 2. Next Page | 8. Back");
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -504,11 +583,12 @@ void ShowPenaltiesForUser(int page)
 	menu.Title = "My Penalties | Page " + to_string(page);
 	ShowMenu(menu);
 	ShowPenaltiesList(penalties);
-	print("1. Previous Page | 2. Next Page | 8. Back\n", false);
+	print("1. Previous Page | 2. Next Page | 8. Back");
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -555,8 +635,8 @@ void PaymentMenu()
 	menu.Items.emplace_back("Your Balance :" + to_string(Balance) + "000 Tomans");
 	menu.Items.emplace_back("Penalty:");
 	int debt = penaltyServices.GetDebtForUser(AuthUser.Id);
-	menu.Items.emplace_back("\tYou Have to Pay " + to_string(debt) + "000 Tomans");
-	menu.Items.emplace_back("---------------------------------------");
+	menu.Items.emplace_back("    You Have to Pay " + to_string(debt) + "000 Tomans");
+	menu.Items.emplace_back("<Line>");
 	menu.Items.emplace_back("1. Pay My Debt");
 	menu.Items.emplace_back("2. Charge My Account");
 	menu.Items.emplace_back("3. My Transactions");
@@ -566,7 +646,7 @@ void PaymentMenu()
 	ShowMenu(menu);
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -615,11 +695,12 @@ void ShowAllTransactionsForManager(int page)
 	menu.Title = "All Transactions | Page " + to_string(page);
 	ShowMenu(menu);
 	ShowTransactionsList(transactions, true);
-	print("1. Previous Page | 2. Next Page | 8. Back\n", false);
+	print("1. Previous Page | 2. Next Page | 8. Back");
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -679,7 +760,7 @@ void MainMenu()
 	ShowMenu(menu);
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -744,7 +825,7 @@ void ManagerMenu()
 	ShowMenu(menu);
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -812,7 +893,7 @@ void Profile()
 		menu.Items.emplace_back("Role : Member");
 	}
 	menu.Items.emplace_back("Register Date : " + AuthUser.SignDate);
-	menu.Items.emplace_back("\n----------------------------------------\n");
+	menu.Items.emplace_back("<Line>");
 	menu.Items.emplace_back("1. Edit");
 	menu.Items.emplace_back("8. Back");
 
@@ -820,7 +901,7 @@ void Profile()
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -859,7 +940,8 @@ void EditProfile()
 
 	MenuInput menu;
 	menu.Title = "Edit Profile";
-	menu.Items.emplace_back("What Do You Want To Change?\n");
+	menu.Items.emplace_back("What Do You Want To Change?");
+	menu.Items.emplace_back("");
 	menu.Items.emplace_back("1. Username");
 	menu.Items.emplace_back("2. Password");
 	menu.Items.emplace_back("3. FullName");
@@ -870,7 +952,7 @@ void EditProfile()
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -885,7 +967,7 @@ void EditProfile()
 	switch (key)
 	{
 	case 1:
-		print("New Username : ");
+		print("New Username : ", false);
 		cin >> newUsername;
 
 		if (userSevices.IsExist(newUsername))
@@ -922,7 +1004,7 @@ void EditProfile()
 		break;
 
 	case 3:
-		print("New FullName : ");
+		print("New FullName : ", false);
 		cin.getline(fl, 100);
 		cin.getline(fl, 100);
 
@@ -968,11 +1050,12 @@ void ShowCommentsForMember(int BookId, int page)
 
 	comments = commentServices.GetCommentsPaged(comments, 10, page);
 	ShowCommentsList(comments);
-	print("1. Previous Page | 2. Next Page | 3. Add a Comment | 8. Back\n", false);
+	print("1. Previous Page | 2. Next Page | 3. Add a Comment | 8. Back");
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1006,7 +1089,7 @@ void ShowCommentsForMember(int BookId, int page)
 		newComment.Id = commentServices.LastId() + 1;
 		newComment.UserId = AuthUser.Id;
 
-		print("Star : ");
+		print("Star : ", false);
 		cin >> temp;
 		if (!IsNumber(temp))
 		{
@@ -1023,7 +1106,7 @@ void ShowCommentsForMember(int BookId, int page)
 		}
 
 		char t[250];
-		print("comment : ");
+		print("comment : ", false);
 		cin.getline(t, 250);
 		cin.getline(t, 250);
 
@@ -1072,7 +1155,7 @@ void SelectBookByMember(int BookId)
 	{
 		menu.Items.emplace_back("Status : Not Available");
 	}
-	menu.Items.emplace_back("\n----------------------------------------\n");
+	menu.Items.emplace_back("<Line>");
 	menu.Items.emplace_back("1. Borrow");
 	menu.Items.emplace_back("2. Comments");
 	menu.Items.emplace_back("8. Back");
@@ -1081,7 +1164,7 @@ void SelectBookByMember(int BookId)
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1142,16 +1225,17 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page, bool B
 	ShowBooksList(books);
 	if (ByGenre)
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Date | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Date | 8. Back");
 	}
 	else
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Genre | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Sort By Genre | 8. Back");
 	}
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1180,7 +1264,7 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page, bool B
 		break;
 
 	case 3:
-		print("Book Id: ");
+		print("Book Id: ", false);
 
 		cin >> temp;
 		if (!IsNumber(temp))
@@ -1229,7 +1313,7 @@ void SearchBookForMember()
 	ShowMenu(menu);
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1242,7 +1326,7 @@ void SearchBookForMember()
 	char temp[100];
 	if (key > 0 && key <= 3)
 	{
-		print("Search Key: ");
+		print("Search Key: ", false);
 		cin.getline(temp, 100);
 		cin.getline(temp, 100);
 	}
@@ -1299,16 +1383,17 @@ void ShowBooksForMembers(int page, bool ByGenre)
 	ShowBooksList(books);
 	if (ByGenre)
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Date | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Date | 8. Back");
 	}
 	else
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Genre | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Search | 5. Sort By Genre | 8. Back");
 	}
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1337,7 +1422,7 @@ void ShowBooksForMembers(int page, bool ByGenre)
 		break;
 
 	case 3:
-		print("Book Id: ");
+		print("Book Id: ", false);
 
 		cin >> temp;
 		if (!IsNumber(temp))
@@ -1430,11 +1515,12 @@ void ShowBorrowedBooksForMembers(int page)
 	CartsUser = bookCartServices.GetPaged(CartsUser, 10, page);
 
 	ShowBookCartsList(CartsUser);
-	print("1. Previous Page | 2. Next Page | 3.Return Book | 8. Back\n", false);
+	print("1. Previous Page | 2. Next Page | 3.Return Book | 8. Back");
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1463,7 +1549,7 @@ void ShowBorrowedBooksForMembers(int page)
 		break;
 
 	case 3:
-		print("Book Id: ");
+		print("Book Id: ", false);
 
 		cin >> temp;
 		if (!IsNumber(temp))
@@ -1508,11 +1594,11 @@ void AddBookByManager()
 	char name[150], author[150], genre[150];
 
 	cin.getline(name, 150);
-	print("Name : ");
+	print("Name : ", false);
 	cin.getline(name, 150);
-	print("Author : ");
+	print("Author : ", false);
 	cin.getline(author, 150);
-	print("Genre : ");
+	print("Genre : ", false);
 	cin.getline(genre, 150);
 
 	book.Name = name;
@@ -1555,16 +1641,17 @@ void ShowBooksForManagers(int page, bool FilterBorrowed)
 	ShowBooksList(books, true);
 	if (FilterBorrowed)
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Remove Filter | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Remove Filter | 8. Back");
 	}
 	else
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Filter Borrowed Books | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select Book | 4. Add a Book | 5. Filter Borrowed Books | 8. Back");
 	}
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 
 	if (!IsNumber(k))
@@ -1594,7 +1681,7 @@ void ShowBooksForManagers(int page, bool FilterBorrowed)
 		break;
 
 	case 3:
-		print("Book Id: ");
+		print("Book Id: ", false);
 
 		cin >> temp;
 		if (!IsNumber(temp))
@@ -1663,8 +1750,8 @@ void SelectUserByManager(int UserId)
 	int BorrowCount = bookCartServices.GetBorrowingCountForUser(UserId);
 	if (BorrowCount > 0)
 	{
-		menu.Items.emplace_back("\n----------------------------------------");
-		menu.Items.emplace_back("\nBorrowed Books:");
+		menu.Items.emplace_back("<Line>");
+		menu.Items.emplace_back("Borrowed Books:");
 		vector<BookCart> carts = bookCartServices.GetAllCartsForUser(UserId);
 		int i = 1;
 		for (BookCart cart : carts)
@@ -1674,7 +1761,8 @@ void SelectUserByManager(int UserId)
 				continue;
 			}
 			Book book = bookServices.Find(cart.BookId);
-			menu.Items.emplace_back(to_string(i) + ". Name: " + book.Name + " | Author: " + book.Author + " | Id: " + to_string(book.Id) + "\n");
+			menu.Items.emplace_back(to_string(i) + ". Name: " + book.Name + " | Author: " + book.Author + " | Id: " + to_string(book.Id));
+			menu.Items.emplace_back("");
 			i++;
 		}
 	}
@@ -1685,7 +1773,7 @@ void SelectUserByManager(int UserId)
 	int balance = transactionServices.GetBalanceForUser(UserId);
 	menu.Items.emplace_back("Balance :" + to_string(balance) + "000 Tomans");
 
-	menu.Items.emplace_back("\n----------------------------------------\n");
+	menu.Items.emplace_back("<Line>");
 	if (!(user.Id == AuthUser.Id))
 	{
 		menu.Items.emplace_back("1. Delete User");
@@ -1697,7 +1785,7 @@ void SelectUserByManager(int UserId)
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1761,7 +1849,8 @@ void EditBookByManager(int BookId)
 	Book book = bookServices.Find(BookId);
 	MenuInput menu;
 	menu.Title = "Edit Book";
-	menu.Items.emplace_back("What Do You Want To Change?\n");
+	menu.Items.emplace_back("What Do You Want To Change?");
+	menu.Items.emplace_back("");
 	menu.Items.emplace_back("1. Name");
 	menu.Items.emplace_back("2. Author");
 	menu.Items.emplace_back("3. Genre");
@@ -1772,7 +1861,7 @@ void EditBookByManager(int BookId)
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1788,7 +1877,7 @@ void EditBookByManager(int BookId)
 	switch (key)
 	{
 	case 1:
-		print("New Name : ");
+		print("New Name : ", false);
 		cin.getline(newName, 100);
 
 		book.Name = newName;
@@ -1798,7 +1887,7 @@ void EditBookByManager(int BookId)
 		break;
 
 	case 2:
-		print("New Author : ");
+		print("New Author : ", false);
 		cin.getline(newAuthor, 100);
 
 		book.Author = newAuthor;
@@ -1810,7 +1899,7 @@ void EditBookByManager(int BookId)
 		break;
 
 	case 3:
-		print("New Genre : ");
+		print("New Genre : ", false);
 
 		cin.getline(newGenre, 100);
 
@@ -1844,11 +1933,12 @@ void ShowCommentsForManager(int bookId, int page)
 
 	comments = commentServices.GetCommentsPaged(comments, 10, page);
 	ShowCommentsList(comments, true);
-	print("1. Previous Page | 2. Next Page | 3. Delete a Comment | 8. Back\n", false);
+	print("1. Previous Page | 2. Next Page | 3. Delete a Comment | 8. Back");
+	printBorderLine();
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -1878,7 +1968,7 @@ void ShowCommentsForManager(int bookId, int page)
 
 	case 3:
 
-		print("Comment Id: ");
+		print("Comment Id: ", false);
 		cin >> temp;
 
 		if (!IsNumber(temp))
@@ -1936,10 +2026,12 @@ void SelectBookByManager(int BookId)
 	else
 	{
 		menu.Items.emplace_back("Status : Not Available");
-		menu.Items.emplace_back("\n----------------------------------------");
+		menu.Items.emplace_back("<Line>");
 		BookCart cart = bookCartServices.Find(book.Id);
 		User user = userSevices.Find(cart.UserId);
-		menu.Items.emplace_back("Currently Borrowed By\n\n");
+		menu.Items.emplace_back("Currently Borrowed By");
+		menu.Items.emplace_back("");
+		menu.Items.emplace_back("");
 		menu.Items.emplace_back("Username : " + user.Username);
 		menu.Items.emplace_back("FullName : " + user.FullName);
 		if (user.IsManager)
@@ -1953,7 +2045,7 @@ void SelectBookByManager(int BookId)
 	}
 
 
-	menu.Items.emplace_back("\n----------------------------------------\n");
+	menu.Items.emplace_back("<Line>");
 	menu.Items.emplace_back("1. Delete");
 	menu.Items.emplace_back("2. Edit");
 	menu.Items.emplace_back("3. Manage Comments");
@@ -1963,7 +2055,7 @@ void SelectBookByManager(int BookId)
 
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -2035,15 +2127,16 @@ void ShowUsersForManagers(int page, bool FilterBorrowed)
 	ShowUsersList(users);
 	if (FilterBorrowed)
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select User | 4. Remove Filter | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select User | 4. Remove Filter | 8. Back");
 	}
 	else
 	{
-		print("1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 8. Back\n", false);
+		print("1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 8. Back");
 	}
+	printBorderLine();
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
@@ -2072,7 +2165,7 @@ void ShowUsersForManagers(int page, bool FilterBorrowed)
 		break;
 
 	case 3:
-		print("User Id: ");
+		print("User Id: ", false);
 
 		cin >> temp;
 		if (!IsNumber(temp))
@@ -2127,11 +2220,11 @@ void AddManager()
 
 	User user;
 	user.IsManager = true;
-	print("Username : ");
+	print("Username : ", false);
 	cin >> user.Username;
-	print("Password : ");
+	print("Password : ", false);
 	user.Password = GetPassword();
-	print("FullName : ");
+	print("FullName : ", false);
 	char fl[100];
 	cin.getline(fl, 100);
 	cin.getline(fl, 100);
@@ -2157,9 +2250,9 @@ void Login()
 	ShowMenu(menu);
 	string Username;
 
-	print("Username : ");
+	print("Username : ", false);
 	cin >> Username;
-	print("Password : ");
+	print("Password : ", false);
 	string Password = GetPassword();
 
 	if (!userSevices.IsExist(Username))
@@ -2191,11 +2284,11 @@ void SignUp()
 	ShowMenu(menu);
 	string Username;
 	char FullName[100];
-	print("Username : ");
+	print("Username : ", false);
 	cin >> Username;
-	print("Password : ");
+	print("Password : ", false);
 	string Password = GetPassword();
-	print("FullName : ");
+	print("FullName : ", false);
 	cin.getline(FullName, 100);
 	cin.getline(FullName, 100);
 
@@ -2240,7 +2333,7 @@ void Authenticate()
 	ShowMenu(menu);
 	int key;
 	string k;
-	cin >> k;
+	print("Key : ", false); cin >> k;
 
 	if (!IsNumber(k))
 	{
