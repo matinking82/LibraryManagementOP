@@ -53,14 +53,16 @@ void Authenticate();
 void SearchBookForMember();
 void Start();
 bool IsNumber(string s);
-void ShowTransactionsList(vector<Transaction> transactions);
+void ShowTransactionsList(vector<Transaction> transactions, bool manager = false);
 void ShowBooksList(vector<Book> books, bool BorrowedBy = false);
 void ShowBookCartsList(vector<BookCart> carts);
 void EditProfile();
 void PayDebt();
 void ChargeAccountForMember();
+void ChargeUserAccountByManager(int UserId);
 void PaymentMenu();
 void ShowTransactionsForUser(int page = 1);
+void ShowAllTransactionsForManager(int page = 1);
 void ShowPenaltiesForUser(int page = 1);
 
 int main()
@@ -221,13 +223,25 @@ void ShowBooksList(vector<Book> books, bool BorrowedBy)
 	}
 }
 
-void ShowTransactionsList(vector<Transaction> transactions)
+void ShowTransactionsList(vector<Transaction> transactions, bool manager)
 {
 	for (Transaction transaction : transactions)
 	{
+		if (manager)
+		{
+			if (userSevices.IsExist(transaction.UserId))
+			{
+				User user = userSevices.Find(transaction.UserId);
+				print(user.Username + ":\n");
+			}
+			else
+			{
+				print("Deleted User:\n");
+			}
+		}
 		if (transaction.InCome)
 		{
-			print("+ Income:\n");
+			print("+ Charged:\n");
 		}
 		else
 		{
@@ -317,6 +331,62 @@ void PayDebt()
 		ShowError("You don't have enough money. Please charge your account!!");
 		PaymentMenu();
 	}
+}
+
+void ChargeUserAccountByManager(int UserId)
+{
+	print("how much Do You Want To charge?\n", false);
+	print("1.10000 Tomans\n");
+	print("2.25000 Tomans\n");
+	print("3.50000 Tomans\n");
+	print("4.100000 Tomans\n");
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		SelectUserByManager(UserId);
+		return;
+	}
+
+	Transaction transaction;
+	transaction.Date = dateTools.Now();
+	transaction.InCome = true;
+	transaction.UserId = UserId;
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		transaction.Amount = 10;
+		break;
+
+	case 2:
+		transaction.Amount = 25;
+
+		break;
+
+	case 3:
+		transaction.Amount = 50;
+
+		break;
+
+	case 4:
+		transaction.Amount = 100;
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		SelectUserByManager(UserId);
+		break;
+	}
+
+	transactionServices.Add(transaction);
+	ShowError("Account Charged Successfully!!");
+	SelectUserByManager(UserId);
 }
 
 void ChargeAccountForMember()
@@ -535,6 +605,58 @@ void PaymentMenu()
 	}
 }
 
+void ShowAllTransactionsForManager(int page)
+{
+
+	vector<Transaction> transactions = transactionServices.AllTransactions();
+	transactions = transactionServices.GetPaged(transactions, 10, page);
+
+	MenuInput menu;
+	menu.Title = "All Transactions | Page " + to_string(page);
+	ShowMenu(menu);
+	ShowTransactionsList(transactions, true);
+	print("1. Previous Page | 2. Next Page | 8. Back\n", false);
+
+	int key;
+	string k;
+	cin >> k;
+
+	if (!IsNumber(k))
+	{
+		ShowError("Invalid Input!!");
+		ShowAllTransactionsForManager(page);
+		return;
+	}
+
+	key = stoi(k);
+	switch (key)
+	{
+	case 1:
+		page--;
+		if (page < 1)
+		{
+			page = 1;
+		}
+		ShowAllTransactionsForManager(page);
+
+		break;
+
+	case 2:
+		page++;
+		ShowAllTransactionsForManager(page);
+		break;
+
+	case 8:
+		ManagerMenu();
+		break;
+
+	default:
+		ShowError("Invalid Input!!");
+		ShowAllTransactionsForManager(page);
+		break;
+	}
+}
+
 void MainMenu()
 {
 	ClearConsole();
@@ -616,7 +738,8 @@ void ManagerMenu()
 	menu.Items.emplace_back("1. Books");
 	menu.Items.emplace_back("2. Users");
 	menu.Items.emplace_back("3. Add Manager");
-	menu.Items.emplace_back("4. Main Menu");
+	menu.Items.emplace_back("4. Finance");
+	menu.Items.emplace_back("5. Main Menu");
 	menu.Items.emplace_back("0. SignOut");
 	ShowMenu(menu);
 	int key;
@@ -649,7 +772,12 @@ void ManagerMenu()
 		AddManager();
 		break;
 
+
 	case 4:
+		ShowAllTransactionsForManager();
+		break;
+
+	case 5:
 		MainMenu();
 		break;
 
@@ -1554,12 +1682,15 @@ void SelectUserByManager(int UserId)
 	{
 		menu.Items.emplace_back("Borrowed Books : " + to_string(BorrowCount));
 	}
+	int balance = transactionServices.GetBalanceForUser(UserId);
+	menu.Items.emplace_back("Balance :" + to_string(balance) + "000 Tomans");
 
 	menu.Items.emplace_back("\n----------------------------------------\n");
 	if (!(user.Id == AuthUser.Id))
 	{
 		menu.Items.emplace_back("1. Delete User");
 	}
+	menu.Items.emplace_back("2. Charge User Account");
 	menu.Items.emplace_back("8. Back");
 
 	ShowMenu(menu);
@@ -1602,6 +1733,10 @@ void SelectUserByManager(int UserId)
 
 		ShowError("User With Id " + to_string(user.Id) + " Deleted Successfully!!");
 		ShowUsersForManagers();
+		break;
+
+	case 2:
+		ChargeUserAccountByManager(UserId);
 		break;
 	case 8:
 		ShowUsersForManagers();
