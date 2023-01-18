@@ -38,7 +38,7 @@ void ManagerMenu();
 void SelectUserByManager(int UserId);
 void ShowBooksForMembers(int page = 1, bool ByGenre = false);
 void Profile();
-void ShowBorrowedBooksForMembers(int page = 1);
+void ShowBorrowedBooksForMembers(int page = 1, bool FilterNRetuned = false);
 void ShowBooksForManagers(int page = 1, bool FilterBorrowed = false);
 void GiveBackBook(int BookId);
 void ShowUsersForManagers(int page = 1, bool FilterBorrowed = false);
@@ -149,6 +149,7 @@ void ClearConsole()
 void print(string n, bool end)
 {
 	printBorder();
+	n = "    " + n;
 	cout << n;
 	if (end)
 	{
@@ -187,6 +188,7 @@ void ShowMenu(MenuInput menu)
 {
 	ClearConsole();
 	printBorderLine();
+	printBorder(true);
 	printBorder();
 	int widthSpace = 116 - menu.Title.length();
 	int left = widthSpace / 2;
@@ -202,14 +204,21 @@ void ShowMenu(MenuInput menu)
 	}
 	printBorder();
 	cout << "\n";
+	printBorder(true);
 	printBorderLine();
+	if (menu.Items.size() > 0)
+	{
+		printBorder(true);
+	}
 	printBorder(true);
 
 	for (string item : menu.Items)
 	{
 		if (item == "<Line>")
 		{
+			printBorder(true);
 			printBorderLine();
+			printBorder(true);
 		}
 		else
 		{
@@ -223,9 +232,11 @@ void ShowMenu(MenuInput menu)
 			cout << "\n";
 		}
 	}
-	printBorder(true);
-	printBorder(true);
-	printBorder(true);
+	if (menu.Items.size() > 0)
+	{
+		printBorder(true);
+		printBorder(true);
+	}
 	printBorder(true);
 }
 
@@ -233,6 +244,7 @@ void ShowUsersList(vector<User> users)
 {
 	for (User user : users)
 	{
+		printBorder(true);
 		print("Id: " + to_string(user.Id));
 		print("Username: " + user.Username);
 		print("FullName: " + user.FullName);
@@ -246,6 +258,7 @@ void ShowUsersList(vector<User> users)
 		{
 			print("Role: Member");
 		}
+		printBorder(true);
 		printBorderLine();
 	}
 }
@@ -256,6 +269,7 @@ void ShowBookCartsList(vector<BookCart> carts)
 	{
 		Book book = bookServices.Find(cart.BookId);
 
+		printBorder(true);
 
 		print("Id: " + to_string(book.Id));
 		print("Name: " + book.Name);
@@ -270,6 +284,7 @@ void ShowBookCartsList(vector<BookCart> carts)
 		{
 			print("Status: Not Returned");
 		}
+		printBorder(true);
 		printBorderLine();
 	}
 }
@@ -278,6 +293,7 @@ void ShowBooksList(vector<Book> books, bool BorrowedBy)
 {
 	for (Book book : books)
 	{
+		printBorder(true);
 		print("Id: " + to_string(book.Id));
 		print("Name: " + book.Name);
 		print("Author: " + book.Author);
@@ -297,6 +313,7 @@ void ShowBooksList(vector<Book> books, bool BorrowedBy)
 				print("Borrowed By: " + user.Username + "(Id:" + to_string(user.Id) + ")");
 			}
 		}
+		printBorder(true);
 		printBorderLine();
 	}
 }
@@ -305,6 +322,7 @@ void ShowTransactionsList(vector<Transaction> transactions, bool manager)
 {
 	for (Transaction transaction : transactions)
 	{
+		printBorder(true);
 		if (manager)
 		{
 			if (userSevices.IsExist(transaction.UserId))
@@ -327,6 +345,7 @@ void ShowTransactionsList(vector<Transaction> transactions, bool manager)
 		}
 		print("Amount: " + to_string(transaction.Amount) + "000 Tomans");
 		print("Date: " + transaction.Date);
+		printBorder(true);
 		printBorderLine();
 	}
 }
@@ -335,6 +354,7 @@ void ShowPenaltiesList(vector<Penalty> penalties)
 {
 	for (Penalty penalty : penalties)
 	{
+		printBorder(true);
 		Book book = bookServices.Find(penalty.BookId);
 		print("Penalty For Book :'" + book.Name);
 		print("Amount: " + to_string(penalty.Amount) + "000 Tomans");
@@ -347,6 +367,7 @@ void ShowPenaltiesList(vector<Penalty> penalties)
 		{
 			print("Status: Not Payed");
 		}
+		printBorder(true);
 		printBorderLine();
 	}
 }
@@ -355,6 +376,7 @@ void ShowCommentsList(vector<Comment> comments, bool showId = false)
 {
 	for (Comment comment : comments)
 	{
+		printBorder(true);
 		User user = userSevices.Find(comment.UserId);
 		if (showId)
 		{
@@ -364,8 +386,9 @@ void ShowCommentsList(vector<Comment> comments, bool showId = false)
 		{
 			print(user.FullName + " (star: " + to_string(comment.Star) + ") :");
 		}
-		print("     " + comment.Text);
+		print("    " + comment.Text);
 
+		printBorder(true);
 		printBorderLine();
 	}
 }
@@ -1503,7 +1526,7 @@ void GiveBackBook(int BookId)
 	ShowBorrowedBooksForMembers();
 }
 
-void ShowBorrowedBooksForMembers(int page)
+void ShowBorrowedBooksForMembers(int page, bool FilterNRetuned)
 {
 	ClearConsole();
 	MenuInput menu;
@@ -1512,10 +1535,32 @@ void ShowBorrowedBooksForMembers(int page)
 
 	vector<BookCart> CartsUser = bookCartServices.GetAllCartsForUser(AuthUser.Id, true);
 
+	if (FilterNRetuned)
+	{
+		vector<BookCart> temp;
+		for (BookCart cart : CartsUser)
+		{
+			if (!cart.IsGivenBack)
+			{
+				temp.emplace_back(cart);
+			}
+		}
+		CartsUser = temp;
+	}
+
 	CartsUser = bookCartServices.GetPaged(CartsUser, 10, page);
 
 	ShowBookCartsList(CartsUser);
-	print("1. Previous Page | 2. Next Page | 3.Return Book | 8. Back");
+
+	if (FilterNRetuned)
+	{
+		print("1. Previous Page | 2. Next Page | 3.Return Book | 4. RemoveFilter | 8. Back");
+	}
+	else
+	{
+		print("1. Previous Page | 2. Next Page | 3.Return Book | 4. Filter Not Returned | 8. Back");
+	}
+
 	printBorderLine();
 
 	int key;
@@ -1525,7 +1570,7 @@ void ShowBorrowedBooksForMembers(int page)
 	if (!IsNumber(k))
 	{
 		ShowError("Invalid Input!!");
-		ShowBorrowedBooksForMembers(page);
+		ShowBorrowedBooksForMembers(page, FilterNRetuned);
 		return;
 	}
 
@@ -1540,12 +1585,12 @@ void ShowBorrowedBooksForMembers(int page)
 		{
 			page = 1;
 		}
-		ShowBorrowedBooksForMembers(page);
+		ShowBorrowedBooksForMembers(page, FilterNRetuned);
 		break;
 
 	case 2:
 		page++;
-		ShowBorrowedBooksForMembers(page);
+		ShowBorrowedBooksForMembers(page, FilterNRetuned);
 		break;
 
 	case 3:
@@ -1555,7 +1600,7 @@ void ShowBorrowedBooksForMembers(int page)
 		if (!IsNumber(temp))
 		{
 			ShowError("Invalid Input!!");
-			ShowBorrowedBooksForMembers(page);
+			ShowBorrowedBooksForMembers(page, FilterNRetuned);
 			break;
 		}
 		l = stoi(temp);
@@ -1563,11 +1608,15 @@ void ShowBorrowedBooksForMembers(int page)
 		if (!bookServices.IsExist(l) || bookServices.Find(l).IsAvailable)
 		{
 			ShowError("Book not found!!");
-			ShowBorrowedBooksForMembers(page);
+			ShowBorrowedBooksForMembers(page, FilterNRetuned);
 			break;
 		}
 
 		GiveBackBook(l);
+		break;
+
+	case 4:
+		ShowBorrowedBooksForMembers(page, !FilterNRetuned);
 		break;
 
 	case 8:
@@ -1576,7 +1625,7 @@ void ShowBorrowedBooksForMembers(int page)
 
 	default:
 		ShowError("Invalid Input!!");
-		ShowBorrowedBooksForMembers(page);
+		ShowBorrowedBooksForMembers(page, FilterNRetuned);
 		break;
 	}
 }
