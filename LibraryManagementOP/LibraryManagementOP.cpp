@@ -66,6 +66,11 @@ void ShowTransactionsForUser(int page = 1);
 void ShowAllTransactionsForManager(int page = 1);
 void ShowPenaltiesForUser(int page = 1);
 void printBorderLine();
+void BorrowBook(int BookId);
+void BorderColor();
+void ResetColors();
+void ShowCommentsList(vector<Comment> comments, bool showId = false);
+void ShowPenaltiesList(vector<Penalty> penalties);
 void printBorder(bool d = false);
 
 int main()
@@ -372,7 +377,7 @@ void ShowPenaltiesList(vector<Penalty> penalties)
 	}
 }
 
-void ShowCommentsList(vector<Comment> comments, bool showId = false)
+void ShowCommentsList(vector<Comment> comments, bool showId)
 {
 	for (Comment comment : comments)
 	{
