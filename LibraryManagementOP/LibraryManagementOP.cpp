@@ -396,7 +396,12 @@ void ShowCommentsList(vector<Comment> comments, bool showId = false)
 void ShowError(string message)
 {
 	ClearConsole();
-	cout << message;
+	printBorderLine();
+	printBorder(true);
+	print(message);
+	printBorder(true);
+	printBorderLine();
+
 	this_thread::sleep_for(chrono::milliseconds(1000));
 }
 
@@ -1530,7 +1535,7 @@ void ShowBorrowedBooksForMembers(int page, bool FilterNRetuned)
 {
 	ClearConsole();
 	MenuInput menu;
-	menu.Title = "My Borrowed Books";
+	menu.Title = "My Borrowed Books | Page " + to_string(page);
 	ShowMenu(menu);
 
 	vector<BookCart> CartsUser = bookCartServices.GetAllCartsForUser(AuthUser.Id, true);
@@ -1796,6 +1801,9 @@ void SelectUserByManager(int UserId)
 	}
 	menu.Items.emplace_back("Register Date : " + user.SignDate);
 
+	int balance = transactionServices.GetBalanceForUser(UserId);
+	menu.Items.emplace_back("Balance :" + to_string(balance) + "000 Tomans");
+
 	int BorrowCount = bookCartServices.GetBorrowingCountForUser(UserId);
 	if (BorrowCount > 0)
 	{
@@ -1819,9 +1827,6 @@ void SelectUserByManager(int UserId)
 	{
 		menu.Items.emplace_back("Borrowed Books : " + to_string(BorrowCount));
 	}
-	int balance = transactionServices.GetBalanceForUser(UserId);
-	menu.Items.emplace_back("Balance :" + to_string(balance) + "000 Tomans");
-
 	menu.Items.emplace_back("<Line>");
 	if (!(user.Id == AuthUser.Id))
 	{
