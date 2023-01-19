@@ -27,6 +27,7 @@ struct MenuInput
 int GetKey();
 string GetUsername();
 string GetPassword();
+string get_string();
 void ClearConsole();
 void print(string n, bool end = true);
 void ShowMenu(MenuInput menu);
@@ -198,6 +199,42 @@ string GetUsername()
 	}
 	cout << '\n';
 	return username;
+}
+
+string get_string()
+{
+	string str = "";
+	char inp;
+	do
+	{
+		inp = _getch();
+
+		if (inp == '\b')
+		{
+			int len = str.length();
+			if (len > 0)
+			{
+				str = str.substr(0, len - 1);
+				cout << "\b \b";
+			}
+			continue;
+		}
+		if (inp == -32)
+		{
+			_getch();
+		}
+
+		if (!((inp >= 48 && inp <= 57) || (inp >= 64 && inp <= 90) || (inp >= 97 && inp <= 122) || inp == 46 || inp == 32 || inp == 63 || inp == 33))
+		{
+			continue;
+		}
+		str += inp;
+		cout << inp;
+
+	} while (inp != '\r');
+
+	cout << '\n';
+	return str;
 }
 
 //bool IsNumber(string s)
@@ -1034,10 +1071,8 @@ void EditProfile()
 
 	case 3:
 		print("New FullName : ", false);
-		//gets_s(fl, 100);
-		gets_s(fl, 100);
 
-		AuthUser.FullName = fl;
+		AuthUser.FullName = get_string();
 		userSevices.Update(AuthUser);
 
 		ShowError("FullName Changed Successfully!!");
@@ -1121,11 +1156,9 @@ void ShowCommentsForMember(int BookId, int page)
 
 		char t[250];
 		print("comment : ", false);
-		//gets_s(t, 250);
-		gets_s(t, 250);
 
 		newComment.Star = star;
-		newComment.Text = t;
+		newComment.Text = get_string();
 
 
 		commentServices.Add(newComment);
@@ -1303,13 +1336,7 @@ void SearchBookForMember()
 	print("Key : ", false);
 	int key = GetKey();
 
-	char temp[100];
-	if (key > 0 && key <= 3)
-	{
-		print("Search Key: ", false);
-		gets_s(temp, 100);
-	}
-	string SearchKey = temp;
+	string SearchKey = get_string();
 	switch (key)
 	{
 	case 1:
@@ -1564,15 +1591,12 @@ void AddBookByManager()
 	char name[150], author[150], genre[150];
 
 	print("Name : ", false);
-	gets_s(name, 150);
+	book.Name = get_string();
 	print("Author : ", false);
-	gets_s(author, 150);
+	book.Author = get_string();
 	print("Genre : ", false);
-	gets_s(genre, 150);
+	book.Genre = get_string();
 
-	book.Name = name;
-	book.Author = author;
-	book.Genre = genre;
 	book.AddDate = dateTools.Now();
 
 	bookServices.Add(book);
@@ -1805,15 +1829,13 @@ void EditBookByManager(int BookId)
 	print("Key : ", false);
 	int key = GetKey();
 
-	char newGenre[100], newName[100], newAuthor[100];
 	char fl[100];
 	switch (key)
 	{
 	case 1:
 		print("New Name : ", false);
-		gets_s(newName, 100);
 
-		book.Name = newName;
+		book.Name = get_string();
 		bookServices.Update(book);
 		ShowError("Name Changed Successfully!!");
 		SelectBookByManager(BookId);
@@ -1821,9 +1843,8 @@ void EditBookByManager(int BookId)
 
 	case 2:
 		print("New Author : ", false);
-		gets_s(newAuthor, 100);
 
-		book.Author = newAuthor;
+		book.Author = get_string();
 
 		bookServices.Update(book);
 
@@ -1834,9 +1855,7 @@ void EditBookByManager(int BookId)
 	case 3:
 		print("New Genre : ", false);
 
-		gets_s(newGenre, 100);
-
-		book.Genre = newGenre;
+		book.Genre = get_string();
 
 		bookServices.Update(book);
 
@@ -2115,10 +2134,7 @@ void AddManager()
 	print("Password : ", false);
 	user.Password = GetPassword();
 	print("FullName : ", false);
-	char fl[100];
-	//gets_s(fl, 100);
-	gets_s(fl, 100);
-	user.FullName = fl;
+	user.FullName = get_string();
 	user.SignDate = dateTools.Now();
 	if (userSevices.IsExist(user.Username))
 	{
@@ -2172,27 +2188,21 @@ void SignUp()
 	MenuInput menu;
 	menu.Title = "SignUp";
 	ShowMenu(menu);
-	string Username;
-	char FullName[100];
+	User user;
 	print("Username : ", false);
-	Username = GetUsername();
+	user.Username = get_string();
 	print("Password : ", false);
-	string Password = GetPassword();
+	user.Password = GetPassword();
 	print("FullName : ", false);
-	//gets_s(FullName, 100);
-	gets_s(FullName, 100);
+	user.FullName = get_string();
 
-	if (userSevices.IsExist(Username))
+	if (userSevices.IsExist(user.Username))
 	{
 		ShowError("This Username is taken!!");
 		Authenticate();
 		return;
 	}
 
-	User user;
-	user.Username = Username;
-	user.Password = Password;
-	user.FullName = FullName;
 	user.SignDate = dateTools.Now();
 	user.IsManager = false;
 	user.Id = userSevices.LastId() + 1;
