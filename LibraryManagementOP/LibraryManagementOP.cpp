@@ -1032,8 +1032,8 @@ void EditProfile()
 
 	case 3:
 		print("New FullName : ", false);
-		cin.getline(fl, 100);
-		cin.getline(fl, 100);
+		//gets_s(fl, 100);
+		gets_s(fl, 100);
 
 		AuthUser.FullName = fl;
 		userSevices.Update(AuthUser);
@@ -1119,8 +1119,8 @@ void ShowCommentsForMember(int BookId, int page)
 
 		char t[250];
 		print("comment : ", false);
-		cin.getline(t, 250);
-		cin.getline(t, 250);
+		//gets_s(t, 250);
+		gets_s(t, 250);
 
 		newComment.Star = star;
 		newComment.Text = t;
@@ -1305,8 +1305,7 @@ void SearchBookForMember()
 	if (key > 0 && key <= 3)
 	{
 		print("Search Key: ", false);
-		cin.getline(temp, 100);
-		cin.getline(temp, 100);
+		gets_s(temp, 100);
 	}
 	string SearchKey = temp;
 	switch (key)
@@ -1562,13 +1561,12 @@ void AddBookByManager()
 
 	char name[150], author[150], genre[150];
 
-	cin.getline(name, 150);
 	print("Name : ", false);
-	cin.getline(name, 150);
+	gets_s(name, 150);
 	print("Author : ", false);
-	cin.getline(author, 150);
+	gets_s(author, 150);
 	print("Genre : ", false);
-	cin.getline(genre, 150);
+	gets_s(genre, 150);
 
 	book.Name = name;
 	book.Author = author;
@@ -1807,12 +1805,11 @@ void EditBookByManager(int BookId)
 
 	char newGenre[100], newName[100], newAuthor[100];
 	char fl[100];
-	cin.getline(newGenre, 100);
 	switch (key)
 	{
 	case 1:
 		print("New Name : ", false);
-		cin.getline(newName, 100);
+		gets_s(newName, 100);
 
 		book.Name = newName;
 		bookServices.Update(book);
@@ -1822,7 +1819,7 @@ void EditBookByManager(int BookId)
 
 	case 2:
 		print("New Author : ", false);
-		cin.getline(newAuthor, 100);
+		gets_s(newAuthor, 100);
 
 		book.Author = newAuthor;
 
@@ -1835,7 +1832,7 @@ void EditBookByManager(int BookId)
 	case 3:
 		print("New Genre : ", false);
 
-		cin.getline(newGenre, 100);
+		gets_s(newGenre, 100);
 
 		book.Genre = newGenre;
 
@@ -2117,8 +2114,8 @@ void AddManager()
 	user.Password = GetPassword();
 	print("FullName : ", false);
 	char fl[100];
-	cin.getline(fl, 100);
-	cin.getline(fl, 100);
+	//gets_s(fl, 100);
+	gets_s(fl, 100);
 	user.FullName = fl;
 	user.SignDate = dateTools.Now();
 	if (userSevices.IsExist(user.Username))
@@ -2180,8 +2177,8 @@ void SignUp()
 	print("Password : ", false);
 	string Password = GetPassword();
 	print("FullName : ", false);
-	cin.getline(FullName, 100);
-	cin.getline(FullName, 100);
+	//gets_s(FullName, 100);
+	gets_s(FullName, 100);
 
 	if (userSevices.IsExist(Username))
 	{
