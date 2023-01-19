@@ -116,6 +116,88 @@ string GetPassword()
 	return pass;
 }
 
+int GetKey()
+{
+	string str = "";
+	char inp;
+
+	do
+	{
+		inp = _getch();
+
+
+		if (inp == '\b')
+		{
+			int len = str.length();
+			if (len > 0)
+			{
+				str = str.substr(0, len - 1);
+				cout << "\b \b";
+			}
+			continue;
+		}
+		if (inp == -32)
+		{
+			_getch();
+		}
+
+		if (!(inp >= 48 && inp <= 57) || str.length() > 8)
+		{
+			continue;
+		}
+
+		str += inp;
+		cout << inp;
+
+	} while (inp != '\r');
+	if (str == "")
+	{
+		return GetKey();
+	}
+	cout << '\n';
+	return stoi(str);
+}
+
+string GetUsername()
+{
+	string username = "";
+	char inp;
+	do
+	{
+		inp = _getch();
+
+		if (inp == '\b')
+		{
+			int len = username.length();
+			if (len > 0)
+			{
+				username = username.substr(0, len - 1);
+				cout << "\b \b";
+			}
+			continue;
+		}
+		if (inp == -32)
+		{
+			_getch();
+		}
+
+		if (!((inp >= 48 && inp <= 57) || (inp >= 64 && inp <= 90) || (inp >= 97 && inp <= 122) || inp == 46))
+		{
+			continue;
+		}
+		username += inp;
+		cout << inp;
+
+	} while (inp != '\r');
+
+	if (username == "")
+	{
+		return GetUsername();
+	}
+	cout << '\n';
+	return username;
+}
+
 bool IsNumber(string s)
 {
 	int len = s.length();
@@ -300,7 +382,8 @@ void ShowBooksList(vector<Book> books, bool BorrowedBy)
 	{
 		printBorder(true);
 		print("Id: " + to_string(book.Id));
-		print("Name: " + book.Name);
+		string Star = commentServices.GetAverageStarForBook(book.Id);
+		print("Name: " + book.Name + " (" + Star + ")");
 		print("Author: " + book.Author);
 		print("Genre: " + book.Genre);
 		print("Added Date: " + book.AddDate);
@@ -452,23 +535,15 @@ void ChargeUserAccountByManager(int UserId)
 	print("3.50000 Tomans");
 	print("4.100000 Tomans");
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		SelectUserByManager(UserId);
-		return;
-	}
 
 	Transaction transaction;
 	transaction.Date = dateTools.Now();
 	transaction.InCome = true;
 	transaction.UserId = UserId;
 
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
@@ -508,23 +583,14 @@ void ChargeAccountForMember()
 	print("3.50000 Tomans");
 	print("4.100000 Tomans");
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
-
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		PaymentMenu();
-		return;
-	}
+	print("Key : ", false);
+	int key = GetKey();
 
 	Transaction transaction;
 	transaction.Date = dateTools.Now();
 	transaction.InCome = true;
 	transaction.UserId = AuthUser.Id;
 
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
@@ -568,18 +634,9 @@ void ShowTransactionsForUser(int page)
 	print("1. Previous Page | 2. Next Page | 8. Back");
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowTransactionsForUser(page);
-		return;
-	}
-
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
@@ -619,18 +676,8 @@ void ShowPenaltiesForUser(int page)
 	print("1. Previous Page | 2. Next Page | 8. Back");
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
-
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowPenaltiesForUser(page);
-		return;
-	}
-
-	key = stoi(k);
+	print("Key : ", false);
+	int key = GetKey();
 	switch (key)
 	{
 	case 1:
@@ -677,18 +724,8 @@ void PaymentMenu()
 	menu.Items.emplace_back("8. Back");
 
 	ShowMenu(menu);
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
-
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		PaymentMenu();
-		return;
-	}
-
-	key = stoi(k);
+	print("Key : ", false);
+	int key = GetKey();
 	switch (key)
 	{
 	case 1:
@@ -731,18 +768,9 @@ void ShowAllTransactionsForManager(int page)
 	print("1. Previous Page | 2. Next Page | 8. Back");
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowAllTransactionsForManager(page);
-		return;
-	}
-
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
@@ -791,18 +819,10 @@ void MainMenu()
 	}
 	menu.Items.emplace_back("0. SignOut");
 	ShowMenu(menu);
-	int key;
 	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		MainMenu();
-		return;
-	}
-
-	key = stoi(k);
 	switch (key)
 	{
 	case 0:
@@ -856,18 +876,10 @@ void ManagerMenu()
 	menu.Items.emplace_back("5. Main Menu");
 	menu.Items.emplace_back("0. SignOut");
 	ShowMenu(menu);
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ManagerMenu();
-		return;
-	}
+	print("Key : ", false);
+	int key = GetKey();
 
-	key = stoi(k);
 	switch (key)
 	{
 	case 0:
@@ -932,18 +944,9 @@ void Profile()
 
 	ShowMenu(menu);
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		Profile();
-		return;
-	}
-
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
@@ -983,25 +986,16 @@ void EditProfile()
 
 	ShowMenu(menu);
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
-
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		EditProfile();
-		return;
-	}
+	print("Key : ", false);
+	int key = GetKey();
 
 	string oldPass, newPass, newUsername, newFullName;
 	char fl[100];
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
 		print("New Username : ", false);
-		cin >> newUsername;
+		newUsername = GetUsername();
 
 		if (userSevices.IsExist(newUsername))
 		{
@@ -1086,19 +1080,9 @@ void ShowCommentsForMember(int BookId, int page)
 	print("1. Previous Page | 2. Next Page | 3. Add a Comment | 8. Back");
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowCommentsForMember(BookId, page);
-		return;
-	}
-
-	key = stoi(k);
-	string temp;
 	Comment newComment;
 	int star;
 	switch (key)
@@ -1123,14 +1107,9 @@ void ShowCommentsForMember(int BookId, int page)
 		newComment.UserId = AuthUser.Id;
 
 		print("Star : ", false);
-		cin >> temp;
-		if (!IsNumber(temp))
-		{
-			ShowError("Invalid Input!!");
-			ShowCommentsForMember(BookId, page);
-			break;
-		}
-		star = stoi(temp);
+
+		star = GetKey();
+
 		if (star > 5 || star < 0)
 		{
 			ShowError("Invalid Input!!");
@@ -1195,18 +1174,9 @@ void SelectBookByMember(int BookId)
 
 	ShowMenu(menu);
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		SelectBookByMember(BookId);
-		return;
-	}
-
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
@@ -1266,19 +1236,9 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page, bool B
 	}
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		SearchBookResult(Searchkey, name, author, page, ByGenre);
-		return;
-	}
-
-	key = stoi(k);
-	string temp;
 	int l;
 	switch (key)
 	{
@@ -1299,14 +1259,8 @@ void SearchBookResult(string Searchkey, bool name, bool author, int page, bool B
 	case 3:
 		print("Book Id: ", false);
 
-		cin >> temp;
-		if (!IsNumber(temp))
-		{
-			ShowError("Invalid Input!!");
-			SearchBookResult(Searchkey, name, author, page, ByGenre);
-			break;
-		}
-		l = stoi(temp);
+
+		l = GetKey();
 
 		if (!bookServices.IsExist(l) || !bookServices.Find(l).IsAvailable)
 		{
@@ -1344,18 +1298,9 @@ void SearchBookForMember()
 	menu.Items.emplace_back("8. Back");
 
 	ShowMenu(menu);
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		SearchBookForMember();
-		return;
-	}
-
-	key = stoi(k);
 	char temp[100];
 	if (key > 0 && key <= 3)
 	{
@@ -1424,19 +1369,9 @@ void ShowBooksForMembers(int page, bool ByGenre)
 	}
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowBooksForMembers(page, ByGenre);
-		return;
-	}
-
-	key = stoi(k);
-	string temp;
 	int l;
 	switch (key)
 	{
@@ -1457,14 +1392,7 @@ void ShowBooksForMembers(int page, bool ByGenre)
 	case 3:
 		print("Book Id: ", false);
 
-		cin >> temp;
-		if (!IsNumber(temp))
-		{
-			ShowError("Invalid Input!!");
-			ShowBooksForMembers(page, ByGenre);
-			break;;
-		}
-		l = stoi(temp);
+		l = GetKey();
 
 		if (!bookServices.IsExist(l) || !bookServices.Find(l).IsAvailable)
 		{
@@ -1573,19 +1501,8 @@ void ShowBorrowedBooksForMembers(int page, bool FilterNRetuned)
 
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
-
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowBorrowedBooksForMembers(page, FilterNRetuned);
-		return;
-	}
-
-	key = stoi(k);
-	string temp;
+	print("Key : ", false);
+	int key = GetKey();
 	int l;
 	switch (key)
 	{
@@ -1606,14 +1523,7 @@ void ShowBorrowedBooksForMembers(int page, bool FilterNRetuned)
 	case 3:
 		print("Book Id: ", false);
 
-		cin >> temp;
-		if (!IsNumber(temp))
-		{
-			ShowError("Invalid Input!!");
-			ShowBorrowedBooksForMembers(page, FilterNRetuned);
-			break;
-		}
-		l = stoi(temp);
+		l = GetKey();
 
 		if (!bookServices.IsExist(l) || bookServices.Find(l).IsAvailable)
 		{
@@ -1708,20 +1618,10 @@ void ShowBooksForManagers(int page, bool FilterBorrowed)
 	}
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowBooksForManagers(page, FilterBorrowed);
-		return;
-	}
-
-	key = stoi(k);
-	string temp;
 	int l;
 	switch (key)
 	{
@@ -1742,14 +1642,7 @@ void ShowBooksForManagers(int page, bool FilterBorrowed)
 	case 3:
 		print("Book Id: ", false);
 
-		cin >> temp;
-		if (!IsNumber(temp))
-		{
-			ShowError("Invalid Input!!");
-			ShowBooksForManagers(page, FilterBorrowed);
-			break;;
-		}
-		l = stoi(temp);
+		l = GetKey();
 
 		if (!bookServices.IsExist(l))
 		{
@@ -1842,18 +1735,9 @@ void SelectUserByManager(int UserId)
 
 	ShowMenu(menu);
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		SelectUserByManager(UserId);
-		return;
-	}
-
-	key = stoi(k);
 	vector<BookCart> carts;
 	switch (key)
 	{
@@ -1918,20 +1802,11 @@ void EditBookByManager(int BookId)
 
 	ShowMenu(menu);
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
-
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		EditBookByManager(BookId);
-		return;
-	}
+	print("Key : ", false);
+	int key = GetKey();
 
 	char newGenre[100], newName[100], newAuthor[100];
 	char fl[100];
-	key = stoi(k);
 	cin.getline(newGenre, 100);
 	switch (key)
 	{
@@ -1995,20 +1870,10 @@ void ShowCommentsForManager(int bookId, int page)
 	print("1. Previous Page | 2. Next Page | 3. Delete a Comment | 8. Back");
 	printBorderLine();
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowCommentsForManager(bookId, page);
-		return;
-	}
-
-	key = stoi(k);
 	int l;
-	string temp;
 	switch (key)
 	{
 	case 1:
@@ -2028,16 +1893,9 @@ void ShowCommentsForManager(int bookId, int page)
 	case 3:
 
 		print("Comment Id: ", false);
-		cin >> temp;
 
-		if (!IsNumber(temp))
-		{
-			ShowError("Invalid Input!!");
-			ShowCommentsForManager(bookId, page);
-			break;
-		}
+		l = GetKey();
 
-		l = stoi(temp);
 		if (!commentServices.IsExist(l) || commentServices.Find(l).BookId != bookId)
 		{
 			ShowError("Invalid Input!!");
@@ -2112,18 +1970,9 @@ void SelectBookByManager(int BookId)
 
 	ShowMenu(menu);
 
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		SelectBookByManager(BookId);
-		return;
-	}
-
-	key = stoi(k);
 	switch (key)
 	{
 	case 1:
@@ -2193,19 +2042,9 @@ void ShowUsersForManagers(int page, bool FilterBorrowed)
 		print("1. Previous Page | 2. Next Page | 3.Select User | 4. Filter Borrowed Users | 8. Back");
 	}
 	printBorderLine();
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
+	print("Key : ", false);
+	int key = GetKey();
 
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		ShowUsersForManagers(page, FilterBorrowed);
-		return;
-	}
-
-	key = stoi(k);
-	string temp;
 	int l;
 	switch (key)
 	{
@@ -2226,14 +2065,7 @@ void ShowUsersForManagers(int page, bool FilterBorrowed)
 	case 3:
 		print("User Id: ", false);
 
-		cin >> temp;
-		if (!IsNumber(temp))
-		{
-			ShowError("Invalid Input!!");
-			ShowUsersForManagers(page, FilterBorrowed);
-			break;;
-		}
-		l = stoi(temp);
+		l = GetKey();
 
 		if (!userSevices.IsExist(l))
 		{
@@ -2280,7 +2112,7 @@ void AddManager()
 	User user;
 	user.IsManager = true;
 	print("Username : ", false);
-	cin >> user.Username;
+	user.Username = GetUsername();
 	print("Password : ", false);
 	user.Password = GetPassword();
 	print("FullName : ", false);
@@ -2310,7 +2142,7 @@ void Login()
 	string Username;
 
 	print("Username : ", false);
-	cin >> Username;
+	Username = GetUsername();
 	print("Password : ", false);
 	string Password = GetPassword();
 
@@ -2344,7 +2176,7 @@ void SignUp()
 	string Username;
 	char FullName[100];
 	print("Username : ", false);
-	cin >> Username;
+	Username = GetUsername();
 	print("Password : ", false);
 	string Password = GetPassword();
 	print("FullName : ", false);
@@ -2390,18 +2222,8 @@ void Authenticate()
 	menu.Items.emplace_back("2. No");
 	menu.Items.emplace_back("0. Exit");
 	ShowMenu(menu);
-	int key;
-	string k;
-	print("Key : ", false); cin >> k;
-
-	if (!IsNumber(k))
-	{
-		ShowError("Invalid Input!!");
-		Authenticate();
-		return;
-	}
-
-	key = stoi(k);
+	print("Key : ", false);
+	int key = GetKey();
 
 	switch (key)
 	{
