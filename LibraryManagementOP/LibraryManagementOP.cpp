@@ -24,6 +24,8 @@ struct MenuInput
 	vector<string> Items;
 };
 
+int GetKey();
+string GetUsername();
 string GetPassword();
 void ClearConsole();
 void print(string n, bool end = true);
@@ -53,7 +55,7 @@ void SignOut();
 void Authenticate();
 void SearchBookForMember();
 void Start();
-bool IsNumber(string s);
+//bool IsNumber(string s);
 void ShowTransactionsList(vector<Transaction> transactions, bool manager = false);
 void ShowBooksList(vector<Book> books, bool BorrowedBy = false);
 void ShowBookCartsList(vector<BookCart> carts);
@@ -198,22 +200,22 @@ string GetUsername()
 	return username;
 }
 
-bool IsNumber(string s)
-{
-	int len = s.length();
-	if (len == 0 || len > 9)
-	{
-		return false;
-	}
-	for (int i = 0; i < len; i++)
-	{
-		if (s[i] > 57 || s[i] < 48)
-		{
-			return false;
-		}
-	}
-	return true;
-}
+//bool IsNumber(string s)
+//{
+//	int len = s.length();
+//	if (len == 0 || len > 9)
+//	{
+//		return false;
+//	}
+//	for (int i = 0; i < len; i++)
+//	{
+//		if (s[i] > 57 || s[i] < 48)
+//		{
+//			return false;
+//		}
+//	}
+//	return true;
+//}
 
 void ResetColors()
 {
