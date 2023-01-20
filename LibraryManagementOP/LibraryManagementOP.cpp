@@ -1029,7 +1029,6 @@ void EditProfile()
 	int key = GetKey();
 
 	string oldPass, newPass, newUsername, newFullName;
-	char fl[100];
 	switch (key)
 	{
 	case 1:
@@ -1335,8 +1334,14 @@ void SearchBookForMember()
 	ShowMenu(menu);
 	print("Key : ", false);
 	int key = GetKey();
+	string SearchKey;
 
-	string SearchKey = get_string();
+	if (key <= 3)
+	{
+		print("Search Key: ", false);
+		SearchKey = get_string();
+	}
+
 	switch (key)
 	{
 	case 1:
@@ -2190,7 +2195,7 @@ void SignUp()
 	ShowMenu(menu);
 	User user;
 	print("Username : ", false);
-	user.Username = get_string();
+	user.Username = GetUsername();
 	print("Password : ", false);
 	user.Password = GetPassword();
 	print("FullName : ", false);
