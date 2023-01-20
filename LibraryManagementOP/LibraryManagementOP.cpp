@@ -606,6 +606,7 @@ void ChargeUserAccountByManager(int UserId)
 	default:
 		ShowError("Invalid Input!!");
 		SelectUserByManager(UserId);
+		return;
 		break;
 	}
 
